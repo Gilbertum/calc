@@ -1,9 +1,27 @@
 window.CONFIG = {
-  meta: { version: '1.4.0', updated_at: '2026-04-29' },
+  meta: { version: '1.5.0', updated_at: '2026-04-29' },
   settings: {
     password: 'Partner2026!',
     history_limit: 50
   },
+
+    managers: {
+    "Крупные партнерства": [
+      "Гуляев Владимир",
+      "Крицкая Ирина", 
+      "Мифтахова Алина",
+      "Подорожная Александра"
+    ],
+    "Отраслевые партнерства": [
+      "Балашов Михаил",
+      "Бундин Алексей",
+      "Ишханова Ася",
+      "Колотий Татьяна",
+      "Крупин Андрей",
+      "Тусикова Анжела"
+    ]
+  },
+
   tools_catalog: [
     { id: 'showcase', name: 'Витрина', threshold: 10, type: 'placement', tooltip: 'Каталог офферов с приоритетным показом', link: 'https://www.tbank.ru/business/' },
     { id: 't_community', name: 'Рассылка в Т-Комьюнити', threshold: 10, type: 'mailing', tooltip: 'База 120К+ предпринимателей', link: 'https://www.tbank.ru/business/' },
