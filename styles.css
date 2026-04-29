@@ -119,3 +119,75 @@ input:focus, textarea:focus { border-color: var(--accent); outline: none; box-sh
 
 /* Отключённая функциональность */
 #pdfBtn { display: none !important; }
+
+/* ===== Улучшенный ввод утилей ===== */
+.rko-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #faf9f7;
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  transition: 0.2s;
+}
+.rko-input-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255,221,45,0.2);
+}
+.rko-number {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  width: 80px;
+  padding: 4px 0;
+  color: var(--text-main);
+}
+.rko-number:focus { outline: none; }
+.rko-number::placeholder { color: var(--text-muted); font-weight: 400; }
+.rko-suffix { color: var(--text-muted); font-size: 14px; }
+.rko-hint { 
+  font-size: 11px; 
+  color: var(--text-muted); 
+  margin-left: auto; 
+  white-space: nowrap;
+}
+
+/* ===== Выпадающие списки ===== */
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: #faf9f7;
+  color: var(--text-main);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+  transition: 0.2s;
+}
+select:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,221,45,0.2);
+}
+select:disabled {
+  background: #f0efed;
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* ===== Скрытие блоков ===== */
+.hidden { display: none !important; }
+
+/* ===== Адаптив для ввода утилей ===== */
+@media(max-width: 480px) {
+  .rko-input-wrapper { flex-wrap: wrap; }
+  .rko-hint { margin-left: 0; margin-top: 6px; width: 100%; }
+}
