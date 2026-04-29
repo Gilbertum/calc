@@ -36,9 +36,24 @@
           <label class="check-item"><input type="checkbox" name="addon" value="credit"> Кредиты</label>
           <label class="check-item"><input type="checkbox" name="addon" value="overnight"> Овернайты</label>
         </div></div>
-        <div class="field-group row">
-          <div class="half"><label for="managerTeam">Команда</label><div class="select-wrapper"><select id="managerTeam" required class="styled-select"><option value="">Выберите команду ▼</option><option value="Крупные партнерства">Крупные партнерства</option><option value="Отраслевые партнерства">Отраслевые партнерства</option></select></div></div>
-          <div class="half"><label for="managerName">ФИО менеджера</label><div class="select-wrapper"><select id="managerName" required disabled class="styled-select"><option value="">Сначала выберите команду ▼</option></select></div></div>
+                <div class="field-group row">
+          <div class="half">
+            <label for="managerTeam">Команда</label>
+            <div class="select-wrapper">
+              <!-- Убрали жесткие опции, оставили пустой select -->
+              <select id="managerTeam" required class="styled-select">
+                <option value="">Загрузка списка...</option>
+              </select>
+            </div>
+          </div>
+          <div class="half">
+            <label for="managerName">ФИО менеджера</label>
+            <div class="select-wrapper">
+              <select id="managerName" required disabled class="styled-select">
+                <option value="">Сначала выберите команду ▼</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="actions"><button type="submit" class="btn primary" id="calcBtn">📐 Рассчитать КП</button><button type="button" class="btn secondary" id="resetBtn">Очистить</button></div>
         <div id="errorBox" class="error-box"></div>
