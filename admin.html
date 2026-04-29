@@ -3,88 +3,319 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- CSP: разрешаем только локальные файлы и inline-скрипты -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;">
-  
-  <!-- Встроенная иконка (убирает 404) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
-  
-  <title>Калькулятор Обратного Лидгена</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' ; img-src 'self' blob:;">
+  <link rel="icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+  <title>Админ-панель | OL Calculator</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- PDF-библиотека убрана -->
+  <style>
+    :root { --admin-bg: #f8f9fa; --card-bg: #fff; --accent: #ffdd2d; --accent-hover: #ffe560; --text: #333; --text-muted: #666; --border: #e4d7c1; --success: #73b077; --error: #ff7b76; }
+    body { background: var(--admin-bg); font-family: system-ui, -apple-system, sans-serif; color: var(--text); }
+    .admin-container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--border); }
+    .admin-title { font-size: 24px; font-weight: 800; }
+    .btn { padding: 10px 18px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 15px; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: var(--text); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,221,45,0.4); }
+    .btn-secondary { background: #fff; border: 2px solid var(--border); color: var(--text); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-danger { background: #fff; border: 2px solid var(--error); color: var(--error); }
+    .btn-danger:hover { background: var(--error); color: #fff; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .card { background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .menu-btn { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px; background: #fff; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; transition: 0.2s; text-align: center; }
+    .menu-btn:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    .menu-icon { font-size: 28px; }
+    .menu-title { font-weight: 700; font-size: 16px; }
+    .menu-desc { font-size: 13px; color: var(--text-muted); }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+    .form-input, .form-select { width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; background: #faf9f7; }
+    .form-input:focus, .form-select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(255,221,45,0.2); }
+    .row { display: flex; gap: 16px; }
+    .col { flex: 1; }
+    .team-block { background: #faf9f7; border-radius: 8px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+    .team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .team-name { font-weight: 700; font-size: 15px; }
+    .manager-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .manager-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #eee; }
+    .code-preview { width: 100%; height: 300px; font-family: 'Courier New', monospace; font-size: 13px; padding: 12px; background: #222; color: #eee; border-radius: 8px; border: none; resize: vertical; }
+    .alert { padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+    .alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .hidden { display: none !important; }
+    .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; cursor: pointer; }
+    .back-link:hover { color: var(--accent-hover); }
+    .history-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .history-table th, .history-table td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; }
+    .history-table th { background: #faf9f7; font-weight: 600; }
+  </style>
 </head>
 <body>
-  <header class="header">
-    <div class="container"><a href="index.html" class="nav-link">← Вернуться к калькулятору</a></div>
-  </header>
-  <main class="container admin-grid">
-    <section class="admin-card">
-      <h2>📦 Редактор конфигурации</h2>
-      <textarea id="configEditor" class="code-editor" spellcheck="false"></textarea>
-      <div class="admin-actions">
-        <button class="btn primary" id="downloadConfig">💾 Скачать config.js</button>
-        <button class="btn secondary" id="validateConfig">✅ Проверить JSON</button>
-      </div>
-      <p id="configStatus" class="status-text"></p>
-    </section>
+  <div class="admin-container">
+    <div class="admin-header">
+      <div class="admin-title">⚙️ Админ-панель калькулятора</div>
+      <a href="index.html" class="btn btn-secondary btn-sm">← Вернуться к калькулятору</a>
+    </div>
 
-    <section class="admin-card">
-      <h2>📜 История генераций (localStorage)</h2>
-      <div id="historyList" class="history-list"></div>
-      <div class="admin-actions">
-        <button class="btn danger" id="clearHistory">🗑 Сбросить историю</button>
-        <button class="btn secondary" id="exportHistory">📥 Экспорт JSON</button>
-      </div>
-    </section>
-  </main>
+    <div id="app"></div>
+  </div>
+
   <script src="config.js"></script>
   <script>
-    // Быстрая авторизация
-    const pwd = prompt('Пароль админ-панели:');
-    if(pwd !== CONFIG.settings.password) { document.body.innerHTML='<h2 style="padding:40px;color:var(--error)">Доступ запрещён</h2>'; throw new Error('Auth'); }
+    // ===== ГЛОБАЛЬНОЕ СОСТОЯНИЕ =====
+    let appConfig = JSON.parse(JSON.stringify(CONFIG));
+    const app = document.getElementById('app');
 
-    const editor = document.getElementById('configEditor');
-    const status = document.getElementById('configStatus');
-    const historyList = document.getElementById('historyList');
-
-    function loadAdmin() {
-      editor.value = JSON.stringify(CONFIG, null, 2);
-      renderHistory();
+    // ===== НАВИГАЦИЯ =====
+    function renderView(view, data = {}) {
+      app.innerHTML = '';
+      switch(view) {
+        case 'main': renderMain(); break;
+        case 'edit': renderEditMenu(); break;
+        case 'add-tool': renderAddTool(); break;
+        case 'update-tool': renderUpdateTool(); break;
+        case 'teams': renderTeams(); break;
+        case 'history': renderHistory(); break;
+        case 'code-preview': renderCodePreview(data.code); break;
+      }
     }
 
+    function backToMain() { renderView('main'); }
+    function backToEdit() { renderView('edit'); }
+
+    // ===== ОСНОВНОЕ МЕНЮ =====
+    function renderMain() {
+      app.innerHTML = `
+        <div class="card">
+          <h3 style="margin-bottom:20px">Что вы хотите сделать?</h3>
+          <div class="menu-grid">
+            <div class="menu-btn" onclick="renderView('edit')">
+              <div class="menu-icon">🛠️</div>
+              <div class="menu-title">Внести изменения в калькулятор</div>
+              <div class="menu-desc">Добавить/изменить инструменты, команды</div>
+            </div>
+            <div class="menu-btn" onclick="renderView('history')">
+              <div class="menu-icon">📜</div>
+              <div class="menu-title">Посмотреть историю запросов</div>
+              <div class="menu-desc">Кто, когда и какие КП генерировал</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== МЕНЮ РЕДАКТИРОВАНИЯ =====
+    function renderEditMenu() {
+      app.innerHTML = `
+        <div class="back-link" onclick="renderView('main')">← Назад</div>
+        <div class="card">
+          <h3 style="margin-bottom:20px">Выберите действие:</h3>
+          <div class="menu-grid">
+            <div class="menu-btn" onclick="renderView('add-tool')">
+              <div class="menu-icon">➕</div>
+              <div class="menu-title">Добавить новый инструмент</div>
+              <div class="menu-desc">Создать карточку с метриками и условиями</div>
+            </div>
+            <div class="menu-btn" onclick="renderView('update-tool')">
+              <div class="menu-icon">✏️</div>
+              <div class="menu-title">Обновить текущий инструмент</div>
+              <div class="menu-desc">Изменить описание, просмотры или порог</div>
+            </div>
+            <div class="menu-btn" onclick="renderView('teams')">
+              <div class="menu-icon">👥</div>
+              <div class="menu-title">Обновить информацию о командах</div>
+              <div class="menu-desc">Добавить/удалить менеджеров, изменить названия</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== ДОБАВИТЬ ИНСТРУМЕНТ =====
+    function renderAddTool() {
+      app.innerHTML = `
+        <div class="back-link" onclick="renderView('edit')">← Назад</div>
+        <div class="card">
+          <h3>➕ Добавить новый инструмент</h3>
+          <form id="toolForm" style="margin-top:16px">
+            <div class="row">
+              <div class="col"><label class="form-label">Название</label><input type="text" name="name" class="form-input" required placeholder="Напр.: Калькулятор"></div>
+              <div class="col"><label class="form-label">Тип (id для кода)</label><input type="text" name="id" class="form-input" required placeholder="calc_tool" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')"></div>
+            </div>
+            <div class="row" style="margin-top:12px">
+              <div class="col"><label class="form-label">Порог утилей (РКО)</label><input type="number" name="threshold" class="form-input" required min="10" step="10"></div>
+              <div class="col"><label class="form-label">Тип инструмента</label>
+                <select name="type" class="form-select"><option value="placement">Размещение</option><option value="mailing">Рассылка</option><option value="editorial">Редакция</option><option value="event">Мероприятие</option><option value="integration">Интеграция</option><option value="mobile">Приложение</option><option value="media">Медиа</option></select>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:12px"><label class="form-label">Описание</label><textarea name="description" class="form-input" rows="2" required placeholder="Кратко: что это и для кого"></textarea></div>
+            <div class="row">
+              <div class="col"><label class="form-label">Просмотров/мес</label><input type="text" name="views" class="form-input" required placeholder="10 000"></div>
+              <div class="col"><label class="form-label">Лидов/мес</label><input type="text" name="leads" class="form-input" required placeholder="150"></div>
+            </div>
+            <div class="form-group" style="margin-top:12px"><label class="form-label">Ссылка на пример</label><input type="url" name="link" class="form-input" placeholder="https://www.tbank.ru/business/"></div>
+            <button type="submit" class="btn btn-primary" style="margin-top:16px; width:100%">Сгенерировать код</button>
+          </form>
+        </div>
+      `;
+      document.getElementById('toolForm').onsubmit = (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        const data = Object.fromEntries(f.entries());
+        
+        if(appConfig.tools_catalog.find(t => t.id === data.id)) { alert('❌ Такой ID уже существует!'); return; }
+
+        appConfig.tools_catalog.push({ id: data.id, name: data.name, cost: parseInt(data.threshold), threshold: parseInt(data.threshold), type: data.type, tooltip: data.description, link: data.link || '#' });
+        appConfig.tools_metrics[data.id] = { description: data.description, views: data.views, leads: data.leads };
+        
+        showSuccess('✅ Инструмент добавлен в память! Ниже готовый код.');
+        generateAndShowCode();
+      };
+    }
+
+    // ===== ОБНОВИТЬ ИНСТРУМЕНТ =====
+    function renderUpdateTool() {
+      const options = appConfig.tools_catalog.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+      app.innerHTML = `
+        <div class="back-link" onclick="renderView('edit')">← Назад</div>
+        <div class="card">
+          <h3>✏️ Обновить текущий инструмент</h3>
+          <div class="form-group" style="margin-top:12px"><label class="form-label">Выберите инструмент</label>
+            <select id="selectTool" class="form-select"><option value="">-- Выберите --</option>${options}</select>
+          </div>
+          <div id="toolEditor" class="hidden" style="margin-top:20px; border-top:1px solid var(--border); padding-top:16px">
+            <form id="updateForm">
+              <input type="hidden" name="id">
+              <div class="row"><div class="col"><label class="form-label">Название</label><input type="text" name="name" class="form-input"></div><div class="col"><label class="form-label">Порог утилей</label><input type="number" name="threshold" class="form-input" min="10" step="10"></div></div>
+              <div class="form-group" style="margin-top:12px"><label class="form-label">Описание</label><textarea name="description" class="form-input" rows="2"></textarea></div>
+              <div class="row"><div class="col"><label class="form-label">Просмотров/мес</label><input type="text" name="views" class="form-input"></div><div class="col"><label class="form-label">Лидов/мес</label><input type="text" name="leads" class="form-input"></div></div>
+              <button type="submit" class="btn btn-primary" style="margin-top:16px; width:100%">Обновить и сгенерировать код</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.getElementById('selectTool').onchange = (e) => {
+        const id = e.target.value; if(!id) return document.getElementById('toolEditor').classList.add('hidden');
+        const tool = appConfig.tools_catalog.find(t => t.id === id);
+        const metric = appConfig.tools_metrics[id] || {};
+        const f = document.getElementById('updateForm');
+        f.id.value = id; f.name.value = tool.name; f.threshold.value = tool.threshold;
+        f.description.value = metric.description; f.views.value = metric.views; f.leads.value = metric.leads;
+        document.getElementById('toolEditor').classList.remove('hidden');
+      };
+      document.getElementById('updateForm').onsubmit = (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        const data = Object.fromEntries(f.entries());
+        const toolIdx = appConfig.tools_catalog.findIndex(t => t.id === data.id);
+        if(toolIdx > -1) {
+          appConfig.tools_catalog[toolIdx].name = data.name;
+          appConfig.tools_catalog[toolIdx].threshold = parseInt(data.threshold);
+          appConfig.tools_catalog[toolIdx].tooltip = data.description;
+          appConfig.tools_metrics[data.id].description = data.description;
+          appConfig.tools_metrics[data.id].views = data.views;
+          appConfig.tools_metrics[data.id].leads = data.leads;
+        }
+        showSuccess('✅ Инструмент обновлён! Ниже готовый код.');
+        generateAndShowCode();
+      };
+    }
+
+    // ===== КОМАНДЫ И МЕНЕДЖЕРЫ =====
+    function renderTeams() {
+      let html = `<div class="back-link" onclick="renderView('edit')">← Назад</div><div class="card"><h3>👥 Управление командами</h3><div id="teamsList" style="margin-top:16px"></div>
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border)">
+          <div class="row"><div class="col"><label class="form-label">Новая команда</label><input type="text" id="newTeamName" class="form-input" placeholder="Напр.: Розничные партнеры"></div><div class="col" style="display:flex;align-items:flex-end"><button class="btn btn-secondary" onclick="addTeam()">➕ Добавить команду</button></div></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:24px; width:100%" onclick="showSuccess('✅ Изменения сохранены в памяти!'); generateAndShowCode()">Сгенерировать финальный код</button>
+      </div>`;
+      app.innerHTML = html;
+      renderTeamsList();
+    }
+
+    function renderTeamsList() {
+      const container = document.getElementById('teamsList'); if(!container) return;
+      container.innerHTML = Object.entries(appConfig.managers).map(([team, managers]) => `
+        <div class="team-block" data-team="${team}">
+          <div class="team-header">
+            <div class="team-name">${team}</div>
+            <button class="btn btn-danger btn-sm" onclick="removeTeam('${team}')">Удалить команду</button>
+          </div>
+          <div class="form-group" style="margin-bottom:8px"><label class="form-label" style="font-size:13px">Добавить менеджера</label>
+            <div class="row"><input type="text" class="form-input" placeholder="ФИО" id="mgr_${team.replace(/\s/g,'')}"><button class="btn btn-secondary btn-sm" onclick="addManager('${team}')">+</button></div>
+          </div>
+          <div class="manager-list">
+            ${managers.map((m, i) => `<div class="manager-item"><span>${m}</span><button class="btn btn-danger btn-sm" onclick="removeManager('${team}', ${i})">Удалить</button></div>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.addTeam = () => { const n = document.getElementById('newTeamName').value.trim(); if(n && !appConfig.managers[n]) { appConfig.managers[n] = []; renderTeamsList(); } };
+    window.addManager = (team) => { const inp = document.getElementById(`mgr_${team.replace(/\s/g,'')}`); const name = inp.value.trim(); if(name && !appConfig.managers[team].includes(name)) { appConfig.managers[team].push(name); inp.value=''; renderTeamsList(); } };
+    window.removeTeam = (team) => { if(confirm(`Удалить команду "${team}" и всех менеджеров?`)) { delete appConfig.managers[team]; renderTeamsList(); } };
+    window.removeManager = (team, idx) => { appConfig.managers[team].splice(idx, 1); renderTeamsList(); };
+
+    // ===== ИСТОРИЯ =====
     function renderHistory() {
       const hist = JSON.parse(localStorage.getItem('cp_history') || '[]');
-      if(!hist.length) return historyList.innerHTML = '<p class="empty">История пуста</p>';
-      historyList.innerHTML = hist.map(h => `
-        <div class="history-item">
-          <strong>${h.partner_name}</strong> | ${h.package_tier} | ${h.total_units} утилей
-          <small>${new Date(h.timestamp).toLocaleString()}</small>
-          <span class="badge">v${h.config_version}</span>
-        </div>`).join('');
+      app.innerHTML = `
+        <div class="back-link" onclick="renderView('main')">← Назад</div>
+        <div class="card">
+          <h3>📜 История генераций КП</h3>
+          ${hist.length === 0 ? '<p style="margin-top:16px;color:var(--text-muted)">История пуста. Менеджеры ещё не генерировали КП.</p>' : 
+          `<div style="overflow-x:auto; margin-top:16px"><table class="history-table"><thead><tr><th>Дата</th><th>Партнёр</th><th>Пакет</th><th>Утилей</th><th>Вариантов</th><th>Версия</th></tr></thead><tbody>
+            ${hist.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td><strong>${h.partner_name}</strong></td><td><span class="badge">${h.package_name}</span></td><td>${h.total_units}</td><td>${h.variants_count}</td><td><code>${h.config_version}</code></td></tr>`).join('')}
+          </tbody></table></div>`}
+          <div style="margin-top:20px; display:flex; gap:10px">
+            <button class="btn btn-secondary" onclick="exportHistory()">📥 Экспорт в JSON</button>
+            <button class="btn btn-danger" onclick="if(confirm('Очистить всю историю?')) { localStorage.removeItem('cp_history'); renderHistory(); }">🗑 Очистить</button>
+          </div>
+        </div>
+      `;
     }
-
-    document.getElementById('validateConfig').onclick = () => {
-      try { JSON.parse(editor.value); status.textContent = '✅ JSON валиден'; status.className = 'status-text success'; }
-      catch(e) { status.textContent = `❌ Ошибка: ${e.message}`; status.className = 'status-text error'; }
+    window.exportHistory = () => {
+      const blob = new Blob([localStorage.getItem('cp_history')||'[]'], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'history_export.json'; a.click();
     };
 
-    document.getElementById('downloadConfig').onclick = () => {
-      const blob = new Blob([`window.CONFIG = ${editor.value};`], {type: 'application/javascript'});
+    // ===== ГЕНЕРАЦИЯ И ПРОСМОТР КОДА =====
+    function generateAndShowCode() {
+      const codeStr = `window.CONFIG = ${JSON.stringify(appConfig, null, 2)};`;
+      renderView('code-preview', { code: codeStr });
+    }
+
+    function renderCodePreview(code) {
+      app.innerHTML = `
+        <div class="back-link" onclick="renderView('edit')">← Назад в меню изменений</div>
+        <div class="card">
+          <div class="alert alert-success">✅ Код успешно сгенерирован на основе ваших правок. <br>Скопируйте его полностью и замените содержимое файла <code>config.js</code> в вашем репозитории GitHub.</div>
+          <textarea class="code-preview" id="codeOutput" readonly>${code}</textarea>
+          <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="copyCode()">📋 Скопировать в буфер</button>
+            <button class="btn btn-secondary" onclick="downloadCode()">💾 Скачать config.js</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function showSuccess(msg) {
+      const el = document.createElement('div'); el.className = 'alert alert-success'; el.textContent = msg; el.style.marginBottom = '12px';
+      app.prepend(el); setTimeout(() => el.remove(), 5000);
+    }
+
+    window.copyCode = () => {
+      navigator.clipboard.writeText(document.getElementById('codeOutput').value).then(() => {
+        const btn = document.querySelector('.btn-primary'); const orig = btn.textContent; btn.textContent = '✅ Скопировано!'; setTimeout(()=>btn.textContent=orig, 2000);
+      });
+    };
+    window.downloadCode = () => {
+      const blob = new Blob([document.getElementById('codeOutput').value], {type:'application/javascript'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'config.js'; a.click();
     };
 
-    document.getElementById('clearHistory').onclick = () => {
-      if(confirm('Удалить всю историю из localStorage?')) {
-        localStorage.removeItem('cp_history'); renderHistory();
-      }
-    };
-
-    document.getElementById('exportHistory').onclick = () => {
-      const blob = new Blob([localStorage.getItem('cp_history')||'[]'], {type:'application/json'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'history.json'; a.click();
-    };
-
-    loadAdmin();
+    // Инициализация
+    renderView('main');
   </script>
 </body>
 </html>
