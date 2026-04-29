@@ -26,24 +26,34 @@
   <main class="container main-grid">
     <section class="form-panel">
       <h2>Параметры партнёра</h2>
-      <form id="calcForm" autocomplete="off">
+   <form id="calcForm" autocomplete="off">
   <!-- Название партнёра -->
   <div class="field-group">
     <label for="partnerName">Название компании-партнёра</label>
-    <input type="text" id="partnerName" placeholder="ООО «Пример»" required pattern="^[\p{L}\p{N}\s«»\"'.,\-()]+$" title="Только буквы, цифры и базовые символы">
+    <input type="text" id="partnerName" placeholder="ООО «Пример»" required>
   </div>
 
-  <!-- Утили РКО: красивый числовой ввод -->
+  <!-- Утили РКО: слайдер + числовой ввод -->
   <div class="field-group">
     <label>Утили РКО / квартал</label>
-    <div class="rko-input-wrapper">
-      <input type="text" id="rkoInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" maxlength="4" class="rko-number">
-      <span class="rko-suffix">утилей</span>
-      <div class="rko-hint">Мин. 10 • Шаг 10 • Автоокругление вниз</div>
+    
+    <!-- Слайдер (полная ширина, крупный, жёлтый) -->
+    <div class="slider-wrapper">
+      <input type="range" id="rkoSlider" min="0" max="200" step="10" value="0" class="rko-slider">
+      <div class="slider-track"></div>
+    </div>
+    
+    <!-- Числовой ввод + подсказки -->
+    <div class="rko-input-row">
+      <div class="rko-number-input">
+        <input type="text" id="rkoInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" maxlength="4">
+        <span class="suffix">утилей</span>
+      </div>
+      <div class="rko-meta">Мин. 10 • Шаг 10 • Автоокругление</div>
     </div>
   </div>
 
-  <!-- Доп. продукты (скрыто, но код оставлен для будущего) -->
+  <!-- Доп. продукты (скрыто) -->
   <div class="field-group hidden" id="addonsBlock">
     <label>Доп. продукты</label>
     <div class="checkbox-grid">
@@ -55,21 +65,25 @@
     </div>
   </div>
 
-  <!-- Команда и менеджер (каскадные списки) -->
+  <!-- Команда и менеджер -->
   <div class="field-group row">
     <div class="half">
       <label for="managerTeam">Команда</label>
-      <select id="managerTeam" required>
-        <option value="">Выберите команду</option>
-        <option value="Крупные партнерства">Крупные партнерства</option>
-        <option value="Отраслевые партнерства">Отраслевые партнерства</option>
-      </select>
+      <div class="select-wrapper">
+        <select id="managerTeam" required class="styled-select">
+          <option value="">Выберите команду ▼</option>
+          <option value="Крупные партнерства">Крупные партнерства</option>
+          <option value="Отраслевые партнерства">Отраслевые партнерства</option>
+        </select>
+      </div>
     </div>
     <div class="half">
       <label for="managerName">ФИО менеджера</label>
-      <select id="managerName" required disabled>
-        <option value="">Сначала выберите команду</option>
-      </select>
+      <div class="select-wrapper">
+        <select id="managerName" required disabled class="styled-select">
+          <option value="">Сначала выберите команду ▼</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -77,7 +91,7 @@
     <button type="submit" class="btn primary" id="calcBtn">📐 Рассчитать КП</button>
     <button type="button" class="btn secondary" id="resetBtn">Очистить</button>
   </div>
-  <div id="errorBox" class="error-box hidden"></div>
+  <div id="errorBox" class="error-box"></div>
 </form>
     </section>
 
