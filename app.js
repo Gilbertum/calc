@@ -6,6 +6,29 @@ document.addEventListener('DOMContentLoaded', () => {
     else { document.body.innerHTML = '<h2 style="padding:40px;text-align:center;font-family:system-ui">Доступ ограничен</h2>'; return; }
   }
 
+    // ... проверка пароля ...
+
+  // === ДИНАМИЧЕСКАЯ ЗАГРУЗКА КОМАНД ИЗ CONFIG.JS ===
+  function loadTeamsFromConfig() {
+    const teamSelect = document.getElementById('managerTeam');
+    teamSelect.innerHTML = '<option value="">Выберите команду ▼</option>';
+    
+    if (CONFIG.managers) {
+      // Берем все ключи (названия команд) из объекта managers
+      Object.keys(CONFIG.managers).forEach(teamName => {
+        const option = document.createElement('option');
+        option.value = teamName;
+        option.textContent = teamName;
+        teamSelect.appendChild(option);
+      });
+    }
+  }
+  
+  // Вызываем сразу при загрузке
+  loadTeamsFromConfig();
+
+  // ... остальной код app.js ...
+
   const slider = document.getElementById('rkoSlider');
   const rkoInput = document.getElementById('rkoInput');
   const form = document.getElementById('calcForm');
