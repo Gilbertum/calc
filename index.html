@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' ; img-src 'self' blob:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' blob: data: https:;">
   <link rel="icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
   <title>Калькулятор Обратного Лидгена</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
   <header class="header">
@@ -20,72 +21,32 @@
     <section class="form-panel">
       <h2>Параметры партнёра</h2>
       <form id="calcForm" autocomplete="off">
-        <div class="field-group">
-          <label for="partnerName">Название компании-партнёра</label>
-          <input type="text" id="partnerName" placeholder="ООО «Пример»" required>
-        </div>
-
+        <div class="field-group"><label for="partnerName">Название компании-партнёра</label><input type="text" id="partnerName" placeholder="ООО «Пример»" required></div>
         <div class="field-group">
           <label>Утили РКО / квартал</label>
-          <div class="slider-wrapper">
-            <input type="range" id="rkoSlider" min="0" max="200" step="10" value="0" class="rko-slider">
-          </div>
+          <div class="slider-wrapper"><input type="range" id="rkoSlider" min="0" max="200" step="10" value="0" class="rko-slider"></div>
           <div class="rko-input-row">
-            <div class="rko-number-input">
-              <input type="text" id="rkoInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" maxlength="4">
-              <span class="suffix">утилей</span>
-            </div>
+            <div class="rko-number-input"><input type="text" id="rkoInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" maxlength="4"><span class="suffix">утилей</span></div>
           </div>
         </div>
-
-        <div class="field-group hidden" id="addonsBlock">
-          <label>Доп. продукты</label>
-          <div class="checkbox-grid">
-            <label class="check-item"><input type="checkbox" name="addon" value="acquiring"> Торговый эквайринг</label>
-            <label class="check-item"><input type="checkbox" name="addon" value="qr"> Оплата по QR</label>
-            <label class="check-item"><input type="checkbox" name="addon" value="profit"> Выгода</label>
-            <label class="check-item"><input type="checkbox" name="addon" value="credit"> Кредиты</label>
-            <label class="check-item"><input type="checkbox" name="addon" value="overnight"> Овернайты</label>
-          </div>
-        </div>
-
+        <div class="field-group hidden" id="addonsBlock"><label>Доп. продукты</label><div class="checkbox-grid">
+          <label class="check-item"><input type="checkbox" name="addon" value="acquiring"> Торговый эквайринг</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="qr"> Оплата по QR</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="profit"> Выгода</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="credit"> Кредиты</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="overnight"> Овернайты</label>
+        </div></div>
         <div class="field-group row">
-          <div class="half">
-            <label for="managerTeam">Команда</label>
-            <div class="select-wrapper">
-              <select id="managerTeam" required class="styled-select">
-                <option value="">Выберите команду ▼</option>
-                <option value="Крупные партнерства">Крупные партнерства</option>
-                <option value="Отраслевые партнерства">Отраслевые партнерства</option>
-              </select>
-            </div>
-          </div>
-          <div class="half">
-            <label for="managerName">ФИО менеджера</label>
-            <div class="select-wrapper">
-              <select id="managerName" required disabled class="styled-select">
-                <option value="">Сначала выберите команду ▼</option>
-              </select>
-            </div>
-          </div>
+          <div class="half"><label for="managerTeam">Команда</label><div class="select-wrapper"><select id="managerTeam" required class="styled-select"><option value="">Выберите команду ▼</option><option value="Крупные партнерства">Крупные партнерства</option><option value="Отраслевые партнерства">Отраслевые партнерства</option></select></div></div>
+          <div class="half"><label for="managerName">ФИО менеджера</label><div class="select-wrapper"><select id="managerName" required disabled class="styled-select"><option value="">Сначала выберите команду ▼</option></select></div></div>
         </div>
-
-        <div class="actions">
-          <button type="submit" class="btn primary" id="calcBtn">📐 Рассчитать КП</button>
-          <button type="button" class="btn secondary" id="resetBtn">Очистить</button>
-        </div>
+        <div class="actions"><button type="submit" class="btn primary" id="calcBtn">📐 Рассчитать КП</button><button type="button" class="btn secondary" id="resetBtn">Очистить</button></div>
         <div id="errorBox" class="error-box"></div>
       </form>
     </section>
-
-    <section class="preview-panel">
-      <div class="preview-placeholder">
-        <p>Заполните форму и нажмите «Рассчитать», чтобы сформировать презентацию КП</p>
-      </div>
-    </section>
+    <section class="preview-panel"><div class="preview-placeholder"><p>Заполните форму и нажмите «Рассчитать», чтобы сформировать презентацию КП</p></div></section>
   </main>
 
-  <!-- Модальное окно-презентация -->
   <div id="cpModal" class="modal hidden">
     <div class="modal-content">
       <button class="modal-close" id="closeModal">✕</button>
