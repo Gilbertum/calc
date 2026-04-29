@@ -191,3 +191,200 @@ select:disabled {
   .rko-input-wrapper { flex-wrap: wrap; }
   .rko-hint { margin-left: 0; margin-top: 6px; width: 100%; }
 }
+
+/* ===== Слайдер утилей (полная ширина, жёлтый, крупный) ===== */
+.slider-wrapper {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  margin: 8px 0 12px;
+}
+
+.rko-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(to right, var(--border), var(--border));
+  border-radius: 4px;
+  outline: none;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+/* Трек с градиентом (заполненная часть) */
+.rko-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%);
+}
+
+.rko-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%);
+  border: none;
+}
+
+/* === Thumb (ползунок) — крупный, жёлтый, с тенью === */
+.rko-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(255,221,45,0.5), 0 2px 4px rgba(0,0,0,0.1);
+  cursor: grab;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  z-index: 3;
+}
+
+.rko-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(255,221,45,0.7), 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.rko-slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(255,221,45,0.5), 0 2px 4px rgba(0,0,0,0.1);
+  cursor: grab;
+  border: none;
+  transition: transform 0.15s;
+}
+
+.rko-slider::-moz-range-thumb:active {
+  transform: scale(1.1);
+}
+
+/* Подпись значения на слайдере */
+.slider-value {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-main);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.slider-wrapper:hover .slider-value,
+.rko-slider:active + .slider-value {
+  opacity: 1;
+}
+
+/* ===== Числовой ввод утилей ===== */
+.rko-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.rko-number-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #faf9f7;
+  padding: 8px 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  transition: 0.2s;
+  flex: 1;
+  max-width: 180px;
+}
+
+.rko-number-input:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255,221,45,0.2);
+}
+
+.rko-number-input input {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  width: 100%;
+  color: var(--text-main);
+  padding: 0;
+}
+.rko-number-input input:focus { outline: none; }
+.rko-number-input .suffix { color: var(--text-muted); font-size: 14px; font-weight: 400; }
+.rko-meta { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+/* ===== Стилизованные селекты (рабочие + красивые) ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.styled-select {
+  width: 100%;
+  padding: 12px 36px 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: #faf9f7;
+  color: var(--text-main);
+  cursor: pointer;
+  appearance: none;
+  /* Кастомная стрелка через SVG */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  transition: all 0.2s;
+}
+
+.styled-select:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,221,45,0.2);
+  background-color: #fff;
+}
+
+.styled-select:disabled {
+  background: #f5f4f2;
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.styled-select option {
+  padding: 10px;
+  background: #fff;
+  color: var(--text-main);
+}
+
+/* ===== Ошибки ===== */
+.error-box {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #fff5f5;
+  border: 1px solid var(--error);
+  border-radius: 8px;
+  color: var(--error);
+  font-size: 14px;
+  display: none;
+}
+.error-box.visible { display: block; animation: fadeIn 0.2s; }
+
+/* ===== Анимации ===== */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
