@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 🔐 Простая авторизация
+  // 🔐 Авторизация
   const authKey = localStorage.getItem('cp_auth');
   if(!authKey || authKey !== CONFIG.settings.password) {
     const p = prompt('🔒 Введите пароль доступа к калькулятору:');
@@ -12,77 +12,112 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Elements
-  const slider = document.getElementById('rkoSlider');
-  const input = document.getElementById('rkoInput');
+  const rkoInput = document.getElementById('rkoInput');
   const form = document.getElementById('calcForm');
   const errorBox = document.getElementById('errorBox');
   const modal = document.getElementById('cpModal');
   const cpContent = document.getElementById('cpContent');
-  const pdfBtn = document.getElementById('pdfBtn');
-  
-  // Скрываем кнопку PDF (функционал отключён)
-  if(pdfBtn) pdfBtn.style.display = 'none';
+  const teamSelect = document.getElementById('managerTeam');
+  const nameSelect = document.getElementById('managerName');
 
-  // Sync Slider <-> Input (округление вниз до кратного 10)
-  function roundDown(value) {
-    return Math.floor(Number(value) / 10) * 10;
+  // 🎯 Каскадные списки: команда → менеджеры
+  function populateManagers(team) {
+    nameSelect.innerHTML = '<option value="">Выберите менеджера</option>';
+    nameSelect.disabled = !team;
+    
+    if(team && CONFIG.managers[team]) {
+      CONFIG.managers[team].forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        nameSelect.appendChild(opt);
+      });
+    }
   }
-  
-  slider.addEventListener('input', () => {
-    const v = roundDown(slider.value);
-    slider.value = v;
-    input.value = v || '';
-  });
-  
-  input.addEventListener('input', () => {
-    const v = roundDown(input.value);
-    slider.value = v;
-    input.value = v;
+
+  teamSelect.addEventListener('change', (e) => {
+    populateManagers(e.target.value);
+    // Сохраняем выбор в localStorage для удобства
+    if(e.target.value) localStorage.setItem('cp_last_team', e.target.value);
   });
 
-  // Reset
+  // Восстанавливаем последний выбор команды при загрузке
+  const lastTeam = localStorage.getItem('cp_last_team');
+  if(lastTeam && CONFIG.managers[lastTeam]) {
+    teamSelect.value = lastTeam;
+    populateManagers(lastTeam);
+  }
+
+  // 🔢 Валидация ввода утилей: только цифры + автоформатирование
+  rkoInput.addEventListener('input', (e) => {
+    // Удаляем всё, кроме цифр
+    let val = e.target.value.replace(/\D/g, '');
+    
+    // Ограничение по длине (до 4 цифр = до 9999)
+    if(val.length > 4) val = val.slice(0, 4);
+    
+    // Автоокругление вниз до кратного 10 при потере фокуса
+    e.target.value = val;
+  });
+
+  rkoInput.addEventListener('blur', (e) => {
+    let val = Number(e.target.value) || 0;
+    val = Math.floor(val / 10) * 10; // округление вниз
+    val = Math.max(0, Math.min(val, 9990)); // лимиты
+    e.target.value = val || '';
+  });
+
+  // Allow only numeric keys + arrows/backspace
+  rkoInput.addEventListener('keydown', (e) => {
+    const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+    if(!/[0-9]/.test(e.key) && !allowed.includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+
+  // Reset form
   document.getElementById('resetBtn').onclick = () => {
-    form.reset(); 
-    slider.value = 0; 
-    input.value = ''; 
+    form.reset();
+    nameSelect.innerHTML = '<option value="">Сначала выберите команду</option>';
+    nameSelect.disabled = true;
     errorBox.classList.remove('visible');
   };
 
-  // Close Modal
+  // Modal close
   document.getElementById('closeModal').onclick = () => modal.classList.remove('active');
   window.onclick = (e) => { if(e.target === modal) modal.classList.remove('active'); };
 
-  // Submit Handler
+  // Submit handler
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     errorBox.classList.remove('visible');
 
-    const base = Number(input.value) || 0;
+    const base = Number(rkoInput.value) || 0;
     if(base < 10) { showError('Минимальное количество утилей — 10'); return; }
 
     const partnerName = document.getElementById('partnerName').value.trim();
-    const team = document.getElementById('managerTeam').value.trim();
-    const manager = document.getElementById('managerName').value.trim();
+    const team = teamSelect.value;
+    const manager = nameSelect.value;
     
     if(!partnerName || !team || !manager) { 
       showError('Заполните все обязательные поля'); 
       return; 
     }
 
-    // 30% rule for RKO-linked addons
-    const addons = document.querySelectorAll('input[name="addon"]:checked');
-    const bonus = Math.floor(addons.length * 0.3);
+    // Доп. продукты скрыты, но логика 30% сохранена для будущего
+    // const addons = document.querySelectorAll('input[name="addon"]:checked');
+    // const bonus = Math.floor(addons.length * 0.3);
+    const bonus = 0; // пока не используем
     const total = Math.min(base + bonus, 200);
 
-    // Map tools by threshold
+    // Map tools
     const available = CONFIG.tools_catalog.filter(t => t.threshold <= total);
-    
     if(!available.length) { 
       showError('Обратный лидген предложить не можем. Минимальный порог: 10 утилей.'); 
       return; 
     }
 
-    // Determine tier
+    // Tier
     let tier = 'Стартовый';
     if(total >= 50) tier = 'VIP';
     else if(total >= 30) tier = 'Продвинутый';
@@ -100,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace('{manager_team}', escapeHtml(team))
       .replace('{manager_name}', escapeHtml(manager));
 
-    // Tools cards with animation delay
+    // Tools cards
     const toolsHtml = available.map((t, i) => {
       const delay = 0.05 + (i * 0.05);
       return CONFIG.templates.tool_card
@@ -114,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     html = html.replace('<!-- TOOLS_PLACEHOLDER -->', `<div class="tools-list">${toolsHtml}</div>`);
 
-    // Case study (first tool)
+    // Case
     const firstToolId = available[0]?.id;
     if(CONFIG.cases[firstToolId]) {
       const c = CONFIG.cases[firstToolId];
@@ -146,18 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return div.innerHTML;
   }
 
-  // Save to localStorage history
+  // History
   function saveHistory(data) {
     const hist = JSON.parse(localStorage.getItem('cp_history') || '[]');
-    hist.unshift({ 
-      id: Date.now(),
-      timestamp: new Date().toISOString(), 
-      ...data 
-    });
+    hist.unshift({ id: Date.now(), timestamp: new Date().toISOString(), ...data });
     localStorage.setItem('cp_history', JSON.stringify(hist.slice(0, CONFIG.settings.history_limit)));
   }
 
-  // Export: Copy to clipboard
+  // Copy button
   document.getElementById('copyBtn').onclick = () => {
     const text = cpContent.innerText;
     navigator.clipboard.writeText(text).then(() => {
@@ -168,11 +199,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(() => alert('Не удалось скопировать. Выделите текст вручную.'));
   };
 
-  // Export: Mailto (упрощённый)
+  // Mailto
   document.getElementById('mailBtn').onclick = () => {
     const partner = document.getElementById('partnerName').value;
     const subject = encodeURIComponent(`КП Обратный Лидген: ${partner}`);
-    const body = encodeURIComponent(`Коллеги, направляю сформированное КП.\nПартнёр: ${partner}\n\nДоступно инструментов: ${cpContent.querySelectorAll('.tool-card').length}\n\nСсылка на калькулятор: ${window.location.href}`);
+    const body = encodeURIComponent(`Коллеги, направляю сформированное КП.\nПартнёр: ${partner}\n\nДоступно инструментов: ${cpContent.querySelectorAll('.tool-card').length}\n\nСсылка: ${window.location.href}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+});
   };
 });
