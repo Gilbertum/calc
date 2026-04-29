@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // 🔐 Auth
   const authKey = localStorage.getItem('cp_auth');
   if(!authKey || authKey !== CONFIG.settings.password) {
     const p = prompt('🔒 Введите пароль доступа к калькулятору:');
@@ -15,57 +16,96 @@ document.addEventListener('DOMContentLoaded', () => {
   const teamSelect = document.getElementById('managerTeam');
   const nameSelect = document.getElementById('managerName');
 
-  function roundToStep(value, step = 10) {
-    const num = Number(String(value).replace(/\D/g, '')) || 0;
-    return Math.floor(num / step) * step;
-  }
-  
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
+  let currentSlide = 0;
+  let totalSlides = 0;
 
-  function showError(msg) {
-    errorBox.textContent = msg;
-    errorBox.classList.add('visible');
-    setTimeout(() => errorBox.classList.remove('visible'), 5000);
-  }
+  // Утилиты
+  function roundToStep(value, step = 10) { return Math.floor(Number(String(value).replace(/\D/g, '')) / step) * step; }
+  function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  function showError(msg) { errorBox.textContent = msg; errorBox.classList.add('visible'); setTimeout(() => errorBox.classList.remove('visible'), 5000); }
 
+  // Слайдер + инпут
   function syncSliderToInput() { rkoInput.value = roundToStep(slider.value) > 0 ? roundToStep(slider.value) : ''; }
   function syncInputToSlider() { slider.value = roundToStep(rkoInput.value); rkoInput.value = roundToStep(rkoInput.value) > 0 ? roundToStep(rkoInput.value) : ''; }
-
   slider.addEventListener('input', syncSliderToInput);
   rkoInput.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); syncInputToSlider(); });
   rkoInput.addEventListener('blur', () => { syncInputToSlider(); if(Number(rkoInput.value) > 0 && Number(rkoInput.value) < 10) { rkoInput.value = '10'; slider.value = '10'; } });
 
+  // Менеджеры
   function populateManagers(team) {
     nameSelect.innerHTML = '<option value="">Выберите менеджера ▼</option>';
     nameSelect.disabled = !team;
     if(team && CONFIG.managers[team]) {
       CONFIG.managers[team].forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name; opt.textContent = name; nameSelect.appendChild(opt);
+        const opt = document.createElement('option'); opt.value = name; opt.textContent = name; nameSelect.appendChild(opt);
       });
-      setTimeout(() => nameSelect.focus(), 50);
     }
   }
-
   teamSelect.addEventListener('change', (e) => { populateManagers(e.target.value); if(e.target.value) localStorage.setItem('cp_last_team', e.target.value); });
   const lastTeam = localStorage.getItem('cp_last_team');
   if(lastTeam && CONFIG.managers[lastTeam]) { teamSelect.value = lastTeam; populateManagers(lastTeam); }
 
+  // Сброс
   document.getElementById('resetBtn').onclick = () => {
     form.reset(); slider.value = 0; rkoInput.value = ''; nameSelect.innerHTML = '<option value="">Сначала выберите команду ▼</option>'; nameSelect.disabled = true; errorBox.classList.remove('visible');
     document.querySelector('.preview-panel').innerHTML = '<div class="preview-placeholder"><p>Заполните форму и нажмите «Рассчитать»</p></div>';
   };
 
-  function openModal(content) { cpContent.innerHTML = content; modal.classList.remove('hidden'); setTimeout(() => modal.classList.add('active'), 10); document.body.style.overflow = 'hidden'; }
-  function closeModal() { modal.classList.remove('active'); setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 200); }
+  // Модальное окно
+  function openModal(html) {
+    cpContent.innerHTML = html;
+    modal.classList.remove('hidden');
+    setTimeout(() => { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }, 10);
+    currentSlide = 0;
+    updateSlideUI();
+    attachSlideEvents();
+  }
+  function closeModal() {
+    modal.classList.remove('active');
+    setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 200);
+  }
   document.getElementById('closeModal').onclick = closeModal;
   modal.onclick = (e) => { if(e.target === modal) closeModal(); };
-  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
 
+  // Навигация по слайдам
+  function navigateTo(index) {
+    currentSlide = Math.max(0, Math.min(index, totalSlides - 1));
+    updateSlideUI();
+  }
+  function updateSlideUI() {
+    document.querySelectorAll('.slide').forEach((sl, i) => {
+      sl.classList.toggle('active', i === currentSlide);
+    });
+    document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+    document.getElementById('prevBtn').disabled = currentSlide === 0;
+    document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+  }
+  function attachSlideEvents() {
+    document.getElementById('prevBtn').onclick = () => navigateTo(currentSlide - 1);
+    document.getElementById('nextBtn').onclick = () => navigateTo(currentSlide + 1);
+    document.getElementById('printBtn').onclick = () => window.print();
+    
+    // Клик по плиткам вариантов -> переход на детальный слайд
+    document.querySelectorAll('.overview-tile').forEach(tile => {
+      tile.onclick = () => {
+        const targetIndex = parseInt(tile.dataset.slideIndex);
+        navigateTo(targetIndex);
+      };
+    });
+    // Кнопка "Назад к вариантам"
+    document.querySelectorAll('.back-to-overview').forEach(btn => {
+      btn.onclick = () => navigateTo(1);
+    });
+    // Клавиатура
+    document.onkeydown = (e) => {
+      if(!modal.classList.contains('active')) return;
+      if(e.key === 'ArrowLeft') navigateTo(currentSlide - 1);
+      if(e.key === 'ArrowRight') navigateTo(currentSlide + 1);
+      if(e.key === 'Escape') closeModal();
+    };
+  }
+
+  // Генерация КП
   form.addEventListener('submit', (e) => {
     e.preventDefault(); errorBox.classList.remove('visible');
     const base = Number(rkoInput.value) || 0;
@@ -83,44 +123,95 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!variants.length) { showError('Обратный лидген предложить не можем.'); return; }
 
     const generatedAt = new Date().toLocaleString('ru-RU');
+    totalSlides = 2 + variants.length; // 1(Intro) + 1(Overview) + N(Details)
+
+    // === СЛАЙД 1: Интро ===
+    let slidesHTML = `
+      <div class="slide slide-intro active" data-index="0">
+        <div class="slide-inner">
+          <div class="badge">Партнёру доступен пакет</div>
+          <h1 class="package-title">${packageName}</h1>
+          <div class="info-row">
+            <span class="info-label">Партнёр:</span> <strong>${escapeHtml(partnerName)}</strong>
+            <span class="dot"></span>
+            <span class="info-label">Объём:</span> <strong>${total} утилей/кв</strong>
+            <span class="dot"></span>
+            <span class="info-label">Вариантов:</span> <strong>${variants.length}</strong>
+          </div>
+          <div class="footer-note">Сформировано: ${generatedAt} | Версия: ${CONFIG.meta.version}</div>
+        </div>
+      </div>`;
+
+    // === СЛАЙД 2: Обзор вариантов ===
+    let overviewHTML = `
+      <div class="slide slide-overview" data-index="1">
+        <div class="slide-inner">
+          <h2 class="slide-title">📦 Что можно предложить?</h2>
+          <div class="tiles-grid">`;
     
-    // Overview
-    const variantsOverviewHtml = variants.map((v, i) => {
-      const toolsPreview = v.tools.map(tid => { const t = CONFIG.tools.find(x => x.id === tid); return t ? t.name : ''; }).join(' + ');
-      return CONFIG.templates.variant_overview_card.replace(/{variant_id}/g, v.id).replace(/{variant_number}/g, i+1).replace(/{variant_title}/g, v.title).replace('{tools_preview}', toolsPreview);
-    }).join('');
+    variants.forEach((v, i) => {
+      const detailIndex = 2 + i;
+      overviewHTML += `
+        <div class="overview-tile" data-slide-index="${detailIndex}">
+          <div class="tile-number">Вариант ${i + 1}</div>
+          <h3 class="tile-title">${v.title}</h3>
+          <div class="tile-tools">${v.tools.map(tid => CONFIG.tools.find(t=>t.id===tid)?.name).join(' + ')}</div>
+          <div class="tile-cta">Открыть →</div>
+        </div>`;
+    });
+    overviewHTML += `</div></div></div>`;
+    slidesHTML += overviewHTML;
 
-    // Detail
-    const variantsDetailHtml = variants.map((v, i) => {
+    // === СЛАЙДЫ 3-N: Детализация ===
+    variants.forEach((v, i) => {
+      const detailIndex = 2 + i;
       let tv = 0, tl = 0;
-      const toolsHtml = v.tools.map(tid => {
-        const tool = CONFIG.tools.find(x => x.id === tid);
+      let toolsHTML = `<div class="tools-list">`;
+      v.tools.forEach(tid => {
+        const tool = CONFIG.tools.find(t => t.id === tid);
         const m = CONFIG.tools_metrics[tid] || { description: '', views: '0', leads: '0' };
-        tv += Number(m.views.replace(/\s/g, '')) || 0; tl += Number(m.leads.replace(/\s/g, '')) || 0;
-        return CONFIG.templates.tool_detail_card.replace('{tool_name}', tool.name).replace('{tool_type}', tool.type.toUpperCase()).replace('{tool_description}', m.description).replace('{views}', m.views).replace('{leads}', m.leads).replace('{tool_link}', tool.link);
-      }).join('');
-      return CONFIG.templates.variant_detail_slide.replace(/{variant_id}/g, v.id).replace(/{variant_number}/g, i+1).replace(/{variant_title}/g, v.title).replace('{tools_detailed_html}', toolsHtml).replace('{total_views}', tv.toLocaleString('ru-RU')).replace('{total_leads}', tl.toLocaleString('ru-RU'));
-    }).join('');
+        tv += Number(m.views.replace(/\s/g, '')) || 0;
+        tl += Number(m.leads.replace(/\s/g, '')) || 0;
+        toolsHTML += `
+          <div class="tool-card">
+            <div class="tool-header"><h3>${tool.name}</h3><span class="type-tag">${tool.type.toUpperCase()}</span></div>
+            <p class="tool-desc">${m.description}</p>
+            <div class="tool-metrics">
+              <span>👁 <strong>${m.views}</strong> просмотров/мес</span>
+              <span>📩 <strong>${m.leads}</strong> заявок/мес</span>
+            </div>
+            <a href="${tool.link}" target="_blank" class="tool-link">Смотреть пример →</a>
+          </div>`;
+      });
+      toolsHTML += `</div>`;
 
-    let html = CONFIG.templates.cp_presentation
-      .replace('{client_name}', escapeHtml(partnerName))
-      .replace('{package_name}', packageName)
-      .replace('{rko_units_total}', total)
-      .replace('{variants_count}', variants.length)
-      .replace('{generated_at}', generatedAt)
-      .replace('{version}', CONFIG.meta.version)
-      .replace('{manager_team}', escapeHtml(team))
-      .replace('{manager_name}', escapeHtml(manager))
-      .replace('{variants_overview_html}', variantsOverviewHtml)
-      .replace('{variants_detail_html}', variantsDetailHtml);
+      slidesHTML += `
+        <div class="slide slide-detail" data-index="${detailIndex}">
+          <div class="slide-inner">
+            <button class="back-to-overview">← Назад к списку вариантов</button>
+            <h2 class="slide-title">Вариант ${i + 1}: ${v.title}</h2>
+            ${toolsHTML}
+            <div class="variant-total">
+              <h4>📊 Суммарный эффект</h4>
+              <div class="metrics-row">
+                <div class="metric"><span class="val">${tv.toLocaleString('ru-RU')}</span><span class="lbl">просмотров/мес</span></div>
+                <div class="metric"><span class="val">${tl.toLocaleString('ru-RU')}</span><span class="lbl">заявок/мес</span></div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    });
 
-    openModal(html);
-    setTimeout(() => {
-      document.getElementById('copyFullKP').onclick = () => { navigator.clipboard.writeText(cpContent.innerText).then(() => { const b=document.getElementById('copyFullKP'); const o=b.textContent; b.textContent='✅ Скопировано!'; setTimeout(()=>b.textContent=o, 2000); }); };
-      document.getElementById('mailKP').onclick = () => { const s=`Коммерческое предложение: Обратный лидген для ${partnerName}`; const b=`Коллеги, направляем КП.\nПартнёр: ${partnerName}\nПакет: ${packageName} (${total} утилей)\n\n${window.location.href}`; window.location.href=`mailto:?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`; };
-      document.querySelectorAll('.variant-card').forEach(card => { card.style.cursor='pointer'; card.onclick=()=>{ const id=card.getAttribute('data-variant-id'); const sl=document.getElementById(`variant-${id}`); if(sl){sl.scrollIntoView({behavior:'smooth'}); sl.classList.add('highlight-variant'); setTimeout(()=>sl.classList.remove('highlight-variant'), 2000);} }; });
-    }, 100);
+    // Навигация
+    slidesHTML += `
+      <div class="slide-controls">
+        <button id="prevBtn" class="nav-btn">←</button>
+        <span id="slideCounter">1 / ${totalSlides}</span>
+        <button id="nextBtn" class="nav-btn">→</button>
+        <button id="printBtn" class="nav-btn print">🖨️ Сохранить PDF / Печать</button>
+      </div>`;
 
+    openModal(slidesHTML);
     saveHistory({ partner_name: partnerName, package_name: packageName, total_units: total, variants_count: variants.length, config_version: CONFIG.meta.version });
   });
 
