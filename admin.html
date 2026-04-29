@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; font-src 'self' ; img-src 'self' blob:;">
-  <link rel="icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' blob: data:;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
   <title>Админ-панель | OL Calculator</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Сначала загружаем config.js -->
+  <script src="config.js"></script>
   <style>
     :root { --admin-bg: #f8f9fa; --card-bg: #fff; --accent: #ffdd2d; --accent-hover: #ffe560; --text: #333; --text-muted: #666; --border: #e4d7c1; --success: #73b077; --error: #ff7b76; }
     body { background: var(--admin-bg); font-family: system-ui, -apple-system, sans-serif; color: var(--text); margin:0; }
@@ -77,33 +79,46 @@
     <div id="app"></div>
   </div>
 
-  <script src="config.js"></script>
   <script>
     const ADMIN_PASS = "reverse";
     let appConfig = {};
-    let isConfigLoaded = false;
 
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        if (typeof CONFIG !== 'undefined' && CONFIG.tools_catalog) {
-          appConfig = JSON.parse(JSON.stringify(CONFIG));
-          isConfigLoaded = true;
-          checkAuth();
-        } else {
-          document.getElementById('authOverlay').classList.add('hidden');
-          document.getElementById('app').innerHTML = '<div class="alert alert-warning">⚠️ Файл config.js не загрузился или не содержит tools_catalog. Проверьте, что файл лежит рядом и открывается через сервер (не file://).</div>';
-        }
-      }, 100);
-    });
+    // Проверяем, загрузился ли CONFIG
+    function initAdmin() {
+      if (typeof window.CONFIG === 'undefined') {
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('app').innerHTML = `
+          <div class="alert alert-warning">
+            <strong>⚠️ Файл config.js не загрузился</strong><br><br>
+            Возможные причины:<br>
+            1. Вы открыли файл через <code>file://</code> (нужен сервер)<br>
+            2. Файл config.js отсутствует в той же папке<br>
+            3. Ошибка в синтаксисе config.js<br><br>
+            <strong>Решение:</strong> Откройте админку через GitHub Pages или локальный сервер.
+          </div>
+          <div class="card">
+            <h3>Быстрая проверка:</h3>
+            <p>Откройте консоль браузера (F12) и введите:</p>
+            <code style="background:#f0f0f0;padding:4px 8px;border-radius:4px;display:block;margin:8px 0">typeof CONFIG</code>
+            <p>Если возвращается <code>"undefined"</code> — файл не загрузился.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // CONFIG загрузился успешно
+      appConfig = JSON.parse(JSON.stringify(window.CONFIG));
+      checkAuth();
+    }
 
     function checkAuth() {
       const pass = document.getElementById('adminPass').value;
       if (pass === ADMIN_PASS) {
         localStorage.setItem('admin_auth', 'granted');
-        document.getElementById('authOverlay').classList.add('hidden');
+        document.getElementById('authOverlay').style.display = 'none';
         render('main');
       } else if (localStorage.getItem('admin_auth') === 'granted') {
-        document.getElementById('authOverlay').classList.add('hidden');
+        document.getElementById('authOverlay').style.display = 'none';
         render('main');
       } else {
         document.getElementById('authError').textContent = pass ? 'Неверный пароль' : '';
@@ -420,6 +435,9 @@
         </div>
       `;
     }
+
+    // Инициализация после загрузки страницы
+    window.addEventListener('DOMContentLoaded', initAdmin);
   </script>
 </body>
 </html>
