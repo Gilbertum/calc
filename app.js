@@ -226,5 +226,17 @@ document.addEventListener('DOMContentLoaded', () => {
     saveHistory({ partner_name: partnerName, package_name: packageName, total_units: total, variants_count: variants.length, config_version: CONFIG.meta.version });
   });
 
-  function saveHistory(data) { try { const h=JSON.parse(localStorage.getItem('cp_history')||'[]'); h.unshift({id:Date.now(), timestamp:new Date().toISOString(), ...data}); localStorage.setItem('cp_history', JSON.stringify(h.slice(0, CONFIG.settings.history_limit))); } catch(e) {} }
+    function saveHistory(data) { 
+    try { 
+      const h = JSON.parse(localStorage.getItem('cp_history')||'[]'); 
+      h.unshift({
+        id: Date.now(), 
+        timestamp: new Date().toISOString(), 
+        ...data,
+        manager_team: teamSelect.value,
+        manager_name: nameSelect.value
+      }); 
+      localStorage.setItem('cp_history', JSON.stringify(h.slice(0, CONFIG.settings.history_limit))); 
+    } catch(e) {} 
+  }
 });
