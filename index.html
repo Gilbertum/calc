@@ -27,50 +27,58 @@
     <section class="form-panel">
       <h2>Параметры партнёра</h2>
       <form id="calcForm" autocomplete="off">
-        <div class="field-group">
-          <label for="partnerName">Название компании-партнёра</label>
-          <input type="text" id="partnerName" placeholder="ООО «Пример»" required>
-        </div>
+  <!-- Название партнёра -->
+  <div class="field-group">
+    <label for="partnerName">Название компании-партнёра</label>
+    <input type="text" id="partnerName" placeholder="ООО «Пример»" required pattern="^[\p{L}\p{N}\s«»\"'.,\-()]+$" title="Только буквы, цифры и базовые символы">
+  </div>
 
-        <div class="field-group">
-          <label>Утили РКО / квартал</label>
-          <div class="range-wrapper">
-            <input type="range" id="rkoSlider" min="0" max="200" step="10" value="0">
-            <div class="range-inputs">
-              <input type="number" id="rkoInput" min="0" max="200" step="10" placeholder="0">
-              <span class="hint">автоматически округляется вниз до кратного 10</span>
-            </div>
-          </div>
-        </div>
+  <!-- Утили РКО: красивый числовой ввод -->
+  <div class="field-group">
+    <label>Утили РКО / квартал</label>
+    <div class="rko-input-wrapper">
+      <input type="text" id="rkoInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" maxlength="4" class="rko-number">
+      <span class="rko-suffix">утилей</span>
+      <div class="rko-hint">Мин. 10 • Шаг 10 • Автоокругление вниз</div>
+    </div>
+  </div>
 
-        <div class="field-group">
-          <label>Доп. продукты (требуют РКО)</label>
-          <div class="checkbox-grid">
-            <label class="check-item"><input type="checkbox" name="addon" value="acquiring"> Торговый эквайринг</label>
-            <label class="check-item"><input type="checkbox" name="addon" value="qr"> Оплата по QR</label>
-            <label class="check-item"><input type="checkbox" name="addon" value="profit"> Выгода</label>
-            <label class="check-item"><input type="checkbox" name="addon" value="credit"> Кредиты</label>
-            <label class="check-item"><input type="checkbox" name="addon" value="overnight"> Овернайты</label>
-          </div>
-        </div>
+  <!-- Доп. продукты (скрыто, но код оставлен для будущего) -->
+  <div class="field-group hidden" id="addonsBlock">
+    <label>Доп. продукты</label>
+    <div class="checkbox-grid">
+      <label class="check-item"><input type="checkbox" name="addon" value="acquiring"> Торговый эквайринг</label>
+      <label class="check-item"><input type="checkbox" name="addon" value="qr"> Оплата по QR</label>
+      <label class="check-item"><input type="checkbox" name="addon" value="profit"> Выгода</label>
+      <label class="check-item"><input type="checkbox" name="addon" value="credit"> Кредиты</label>
+      <label class="check-item"><input type="checkbox" name="addon" value="overnight"> Овернайты</label>
+    </div>
+  </div>
 
-        <div class="field-group row">
-          <div class="half">
-            <label for="managerTeam">Команда</label>
-            <input type="text" id="managerTeam" placeholder="Партнёрские продукты" required>
-          </div>
-          <div class="half">
-            <label for="managerName">ФИО менеджера</label>
-            <input type="text" id="managerName" placeholder="Иван Иванов" required>
-          </div>
-        </div>
+  <!-- Команда и менеджер (каскадные списки) -->
+  <div class="field-group row">
+    <div class="half">
+      <label for="managerTeam">Команда</label>
+      <select id="managerTeam" required>
+        <option value="">Выберите команду</option>
+        <option value="Крупные партнерства">Крупные партнерства</option>
+        <option value="Отраслевые партнерства">Отраслевые партнерства</option>
+      </select>
+    </div>
+    <div class="half">
+      <label for="managerName">ФИО менеджера</label>
+      <select id="managerName" required disabled>
+        <option value="">Сначала выберите команду</option>
+      </select>
+    </div>
+  </div>
 
-        <div class="actions">
-          <button type="submit" class="btn primary" id="calcBtn">📐 Рассчитать КП</button>
-          <button type="button" class="btn secondary" id="resetBtn">Очистить</button>
-        </div>
-        <div id="errorBox" class="error-box hidden"></div>
-      </form>
+  <div class="actions">
+    <button type="submit" class="btn primary" id="calcBtn">📐 Рассчитать КП</button>
+    <button type="button" class="btn secondary" id="resetBtn">Очистить</button>
+  </div>
+  <div id="errorBox" class="error-box hidden"></div>
+</form>
     </section>
 
     <section class="preview-panel">
