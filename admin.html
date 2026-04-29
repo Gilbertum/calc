@@ -269,20 +269,76 @@
     window.removeTeam = (team) => { if(confirm(`Удалить "${team}"?`)) { delete appConfig.managers[team]; renderTeamsList(); } };
     window.delMgr = (team, idx) => { appConfig.managers[team].splice(idx, 1); renderTeamsList(); };
 
-    // 📜 История
+        // 📜 История
     function renderHistory() {
       const hist = JSON.parse(localStorage.getItem('cp_history') || '[]');
       document.getElementById('app').innerHTML = `
         <div class="back-link" onclick="render('main')">← Назад</div>
         <div class="card">
-          <h3 style="margin:0 0 12px">История генераций</h3>
-          ${hist.length ? `<table class="history-table"><thead><tr><th>Дата</th><th>Партнёр</th><th>Пакет</th><th>Утилей</th></tr></thead><tbody>${hist.map(h => `<tr><td>${new Date(h.timestamp).toLocaleDateString()}</td><td><b>${h.partner_name}</b></td><td>${h.package_name}</td><td>${h.total_units}</td></tr>`).join('')}</tbody></table>` : '<p style="margin-top:12px">История пуста.</p>'}
-          <div style="margin-top:14px;display:flex;gap:10px"><button class="btn btn-secondary btn-sm" onclick="expHist()">📥 JSON</button><button class="btn btn-danger btn-sm" onclick="if(confirm('Очистить?')){localStorage.removeItem('cp_history');render('history');}">🗑 Очистить</button></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <h3 style="margin:0">История генераций</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="expHist()">📥 Скачать CSV</button>
+              <button class="btn btn-danger btn-sm" onclick="if(confirm('Очистить всю историю?')){localStorage.removeItem('cp_history');render('history');}">🗑 Очистить</button>
+            </div>
+          </div>
+          ${hist.length ? `
+            <div style="overflow-x:auto">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    <th>Партнёр</th>
+                    <th>Команда</th>
+                    <th>Менеджер</th>
+                    <th>Пакет</th>
+                    <th>Утилей</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${hist.map(h => `
+                    <tr>
+                      <td>${new Date(h.timestamp).toLocaleString()}</td>
+                      <td><b>${h.partner_name}</b></td>
+                      <td>${h.manager_team || '-'}</td>
+                      <td>${h.manager_name || '-'}</td>
+                      <td>${h.package_name}</td>
+                      <td>${h.total_units}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : '<p style="margin-top:12px;color:var(--text-muted)">История пуста. Менеджеры ещё не генерировали КП.</p>'}
         </div>
       `;
     }
-    window.expHist = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([localStorage.getItem('cp_history')||'[]'],{type:'application/json'})); a.download='history.json'; a.click(); };
-
+    
+    window.expHist = () => {
+      const hist = JSON.parse(localStorage.getItem('cp_history') || '[]');
+      if(!hist.length) return alert('История пуста');
+      
+      // Формируем CSV
+      const headers = ['Дата','Партнёр','Команда','Менеджер','Пакет','Утилей','Вариантов','Версия'];
+      const rows = hist.map(h => [
+        new Date(h.timestamp).toLocaleString(),
+        `"${h.partner_name}"`,
+        `"${h.manager_team || ''}"`,
+        `"${h.manager_name || ''}"`,
+        h.package_name,
+        h.total_units,
+        h.variants_count || 0,
+        h.config_version || ''
+      ]);
+      
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob(['\uFEFF' + csvContent], {type: 'text/csv;charset=utf-8;'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `history_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    };
+    
     // 💾 Генерация и предпросмотр
     function generateCode() {
       return `window.CONFIG = ${JSON.stringify(appConfig, null, 2)};`;
