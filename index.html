@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' blob: data: https:;">
-  <link rel="icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E">
   <title>Калькулятор Обратного Лидгена</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -16,7 +16,6 @@
       <nav><a href="admin.html" class="nav-link">⚙️ Админ-панель</a></nav>
     </div>
   </header>
-
   <main class="container main-grid">
     <section class="form-panel">
       <h2>Параметры партнёра</h2>
@@ -30,17 +29,16 @@
           </div>
         </div>
         <div class="field-group hidden" id="addonsBlock"><label>Доп. продукты</label><div class="checkbox-grid">
-          <label class="check-item"><input type="checkbox" name="addon" value="acquiring"> Торговый эквайринг</label>
-          <label class="check-item"><input type="checkbox" name="addon" value="qr"> Оплата по QR</label>
-          <label class="check-item"><input type="checkbox" name="addon" value="profit"> Выгода</label>
-          <label class="check-item"><input type="checkbox" name="addon" value="credit"> Кредиты</label>
-          <label class="check-item"><input type="checkbox" name="addon" value="overnight"> Овернайты</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="acquiring">Торговый эквайринг</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="qr">Оплата по QR</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="profit">Выгода</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="credit">Кредиты</label>
+          <label class="check-item"><input type="checkbox" name="addon" value="overnight">Овернайты</label>
         </div></div>
-                <div class="field-group row">
+        <div class="field-group row">
           <div class="half">
             <label for="managerTeam">Команда</label>
             <div class="select-wrapper">
-              <!-- Убрали жесткие опции, оставили пустой select -->
               <select id="managerTeam" required class="styled-select">
                 <option value="">Загрузка списка...</option>
               </select>
@@ -61,14 +59,12 @@
     </section>
     <section class="preview-panel"><div class="preview-placeholder"><p>Заполните форму и нажмите «Рассчитать», чтобы сформировать презентацию КП</p></div></section>
   </main>
-
   <div id="cpModal" class="modal hidden">
     <div class="modal-content">
       <button class="modal-close" id="closeModal">✕</button>
       <div id="cpContent" class="cp-container"></div>
     </div>
   </div>
-
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
