@@ -9,6 +9,9 @@
     --success: #73b077; 
     --error: #ff7b76; 
     --radius: 12px; 
+    /* Dynamic package colors */
+    --pkg-color: #ffdd2d; 
+    --pkg-bg: #ffdd2d22; 
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -62,22 +65,33 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 /* Container for slides */
 .cp-container { flex: 1; position: relative; overflow: hidden; background: #fff; border-radius: 0 0 clamp(12px, 2vmin, 20px) clamp(12px, 2vmin, 20px); }
 
-/* Individual Slide Fix */
+/* Individual Slide & Animations */
 .slide { 
     position: absolute; 
     top: 0; left: 0; 
     width: 100%; height: 100%; 
     padding: clamp(16px, 3vmin, 32px); 
-    /* ИСПРАВЛЕНИЕ: Добавлен большой отступ снизу, чтобы контент не заезжал под кнопки */
     padding-bottom: clamp(70px, 8vh, 100px); 
-    opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; transform: scale(0.99); display: flex; flex-direction: column; 
+    opacity: 0; pointer-events: none; 
+    transform: translateX(20px);
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1); 
+    display: flex; flex-direction: column; 
 }
-.slide.active { opacity: 1; pointer-events: auto; transform: scale(1); }
+.slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+
+/* Animation States */
+.slide.slide-enter-left { transform: translateX(-40px); opacity: 0; }
+.slide.slide-enter-right { transform: translateX(40px); opacity: 0; }
+.slide.slide-exit-left { transform: translateX(40px); opacity: 0; }
+.slide.slide-exit-right { transform: translateX(-40px); opacity: 0; }
 
 /* Slide Content */
-.slide-intro { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); justify-content: center; align-items: center; text-align: center; color: var(--text-main); }
-.slide-intro .badge { background: rgba(255,255,255,0.3); padding: clamp(4px, 1vmin, 10px) clamp(12px, 2vw, 24px); border-radius: clamp(12px, 2vmin, 24px); font-size: clamp(11px, 1.5vmin, 15px); font-weight: 600; margin-bottom: clamp(12px, 2vh, 24px); }
-.slide-intro .package-title { font-size: clamp(28px, 6vmin, 64px); font-weight: 900; margin: 0 0 clamp(16px, 3vh, 32px); letter-spacing: -1px; line-height: 1.1; }
+.slide-intro { background: linear-gradient(135deg, var(--pkg-color) 0%, color-mix(in srgb, var(--pkg-color), #fff 20%) 100%); justify-content: center; align-items: center; text-align: center; color: var(--text-main); position: relative; overflow: hidden; }
+.slide-intro::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15) 0%, transparent 60%); pointer-events: none; }
+.package-badge { background: rgba(255,255,255,0.95); padding: clamp(8px, 1.5vmin, 16px) clamp(20px, 3vw, 40px); border-radius: clamp(20px, 3vmin, 40px); font-size: clamp(14px, 2vmin, 20px); font-weight: 800; margin-bottom: clamp(16px, 2vh, 32px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative; z-index: 1; text-transform: uppercase; letter-spacing: 1px; }
+.package-slogan { font-size: clamp(16px, 2.5vmin, 24px); font-weight: 600; margin: 0 0 clamp(20px, 3vh, 40px); opacity: 0.9; max-width: 800px; line-height: 1.4; }
+.package-title { font-size: clamp(36px, 8vmin, 80px); font-weight: 900; margin: 0 0 clamp(20px, 3vh, 40px); letter-spacing: -2px; line-height: 1.1; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.package-range { display: inline-block; background: rgba(255,255,255,0.3); padding: clamp(6px, 1vmin, 12px) clamp(16px, 2vw, 24px); border-radius: clamp(8px, 1.5vmin, 16px); font-size: clamp(14px, 2vmin, 18px); font-weight: 700; margin-bottom: clamp(16px, 2vh, 32px); }
 .slide-intro .info-row { display: flex; gap: clamp(10px, 1.5vw, 24px); flex-wrap: wrap; justify-content: center; font-size: clamp(13px, 1.8vmin, 18px); align-items: center; }
 .slide-intro .dot { width: clamp(3px, 0.5vmin, 6px); height: clamp(3px, 0.5vmin, 6px); background: rgba(0,0,0,0.3); border-radius: 50%; align-self: center; }
 .slide-intro .footer-note { margin-top: clamp(16px, 4vh, 40px); font-size: clamp(10px, 1.2vmin, 14px); opacity: 0.7; }
@@ -85,25 +99,10 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 .slide-title { font-size: clamp(18px, 3vmin, 32px); font-weight: 800; margin-bottom: clamp(16px, 2.5vh, 28px); color: var(--text-main); flex-shrink: 0; }
 
 /* Grid for Overview */
-.tiles-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 18vw, 240px), 1fr)); 
-    gap: clamp(10px, 1.5vw, 20px); 
-    flex: 1; 
-    overflow-y: auto; /* Разрешаем вертикальный скролл, если карточек много */
-    padding-right: 4px;
-}
-
-.overview-tile { 
-    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); 
-    border: 2px solid var(--border); 
-    border-radius: clamp(8px, 1.5vmin, 14px); 
-    padding: clamp(12px, 2vmin, 20px); 
-    cursor: pointer; transition: 0.2s; position: relative; display: flex; flex-direction: column; justify-content: center; 
-}
-.overview-tile:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); border-color: var(--accent); }
-.overview-tile::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: clamp(3px, 0.5vmin, 5px); background: var(--accent); border-radius: clamp(8px, 1.5vmin, 14px) clamp(8px, 1.5vmin, 14px) 0 0; transform: scaleX(0); transition: 0.3s; }
-.overview-tile:hover::after { transform: scaleX(1); }
+.tiles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 18vw, 240px), 1fr)); gap: clamp(10px, 1.5vw, 20px); flex: 1; overflow-y: auto; padding-right: 4px; }
+.overview-tile { background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); border: 2px solid var(--border); border-left: 4px solid var(--pkg-color); border-radius: clamp(8px, 1.5vmin, 14px); padding: clamp(12px, 2vmin, 20px); cursor: pointer; transition: 0.2s; position: relative; display: flex; flex-direction: column; justify-content: center; }
+.overview-tile:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-left-width: 6px; }
+.tile-package-badge { display: inline-block; background: var(--pkg-bg); color: var(--pkg-color); padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
 .tile-number { display: inline-block; background: var(--accent); color: var(--text-main); padding: clamp(2px, 0.5vmin, 6px) clamp(6px, 1vw, 12px); border-radius: clamp(4px, 0.8vmin, 8px); font-size: clamp(10px, 1.2vmin, 13px); font-weight: 700; margin-bottom: clamp(6px, 1vh, 12px); }
 .tile-title { font-size: clamp(14px, 2vmin, 22px); font-weight: 700; margin: 0 0 clamp(6px, 1vh, 10px); color: var(--text-main); }
 .tile-tools { font-size: clamp(11px, 1.4vmin, 15px); color: var(--text-muted); margin-bottom: clamp(8px, 1.5vh, 14px); line-height: 1.3; }
@@ -113,14 +112,7 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 .back-to-overview:hover { border-color: var(--accent); color: var(--text-main); background: #faf9f7; }
 
 /* Detail Slide Grid */
-.tools-list { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 20vw, 280px), 1fr)); 
-    gap: clamp(10px, 1.5vw, 20px); 
-    flex: 1; 
-    overflow-y: auto; 
-    padding-right: 8px; 
-}
+.tools-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 20vw, 280px), 1fr)); gap: clamp(10px, 1.5vw, 20px); flex: 1; overflow-y: auto; padding-right: 8px; }
 .tool-card { background: #faf9f7; border-radius: clamp(6px, 1vmin, 12px); padding: clamp(10px, 1.5vmin, 18px); border: 1px solid var(--border); display: flex; flex-direction: column; }
 .tool-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: clamp(6px, 1vh, 10px); gap: 8px; }
 .tool-header h3 { font-size: clamp(14px, 2vmin, 20px); font-weight: 700; margin: 0; line-height: 1.2; }
@@ -132,31 +124,14 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 .tool-link:hover { color: var(--accent-hover); text-decoration: underline; }
 
 /* Summary Box */
-.variant-total { 
-    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); 
-    border: 2px solid var(--border); 
-    border-radius: clamp(8px, 1.5vmin, 14px); 
-    padding: clamp(12px, 2vmin, 20px); 
-    margin-top: clamp(12px, 2vh, 24px); 
-    flex-shrink: 0; 
-}
+.variant-total { background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); border: 2px solid var(--border); border-radius: clamp(8px, 1.5vmin, 14px); padding: clamp(12px, 2vmin, 20px); margin-top: clamp(12px, 2vh, 24px); flex-shrink: 0; }
 .variant-total h4 { margin: 0 0 clamp(8px, 1.5vh, 14px); font-size: clamp(13px, 1.8vmin, 18px); }
 .metrics-row { display: flex; gap: clamp(16px, 3vw, 32px); flex-wrap: wrap; }
 .metric .val { font-size: clamp(20px, 3.5vmin, 36px); font-weight: 900; color: var(--success); line-height: 1; }
 .metric .lbl { font-size: clamp(10px, 1.2vmin, 13px); color: var(--text-muted); display: block; margin-top: 4px; }
 
 /* Controls - Fixed Height */
-.slide-controls { 
-    position: absolute; 
-    bottom: 0; left: 0; right: 0; 
-    height: clamp(48px, 6vh, 60px); /* Фиксированная высота */
-    background: #fff; 
-    border-top: 2px solid var(--border); 
-    display: flex; align-items: center; justify-content: center; 
-    gap: clamp(10px, 1.5vw, 20px); 
-    padding: 0 clamp(16px, 3vw, 24px); 
-    z-index: 5; 
-}
+.slide-controls { position: absolute; bottom: 0; left: 0; right: 0; height: clamp(48px, 6vh, 60px); background: #fff; border-top: 2px solid var(--border); display: flex; align-items: center; justify-content: center; gap: clamp(10px, 1.5vw, 20px); padding: 0 clamp(16px, 3vw, 24px); z-index: 5; }
 .nav-btn { background: #fff; border: 2px solid var(--border); border-radius: clamp(4px, 0.8vmin, 8px); width: clamp(32px, 4vmin, 40px); height: clamp(32px, 4vmin, 40px); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: 0.2s; font-size: clamp(14px, 2vmin, 18px); }
 .nav-btn:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); }
 .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -169,4 +144,6 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
     .modal { padding: 0; } 
     .modal-content { width: 100%; height: 100%; border-radius: 0; } 
     .tiles-grid { grid-template-columns: 1fr; } 
+    .package-title { font-size: 28px; }
+    .package-badge { font-size: 14px; padding: 10px 20px; }
 }
