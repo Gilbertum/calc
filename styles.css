@@ -36,8 +36,6 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 .rko-number-input .suffix { color: var(--text-muted); font-size: clamp(12px, 1.4vmin, 15px); }
 .styled-select { background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: clamp(16px, 2vmin, 20px); padding-right: clamp(28px, 4vw, 36px); }
 .styled-select:disabled { background: #f5f4f2; color: var(--text-muted); cursor: not-allowed; opacity: 0.7; }
-
-/* === MODAL & SLIDE DECK (95% viewport, no scroll) === */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 2.5vh 2.5vw; opacity: 0; pointer-events: none; transition: 0.2s; }
 .modal.active { opacity: 1; pointer-events: auto; }
 .modal.hidden { display: none !important; }
@@ -45,19 +43,14 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 .modal-close { position: absolute; top: clamp(8px, 1.5vh, 16px); right: clamp(8px, 1.5vw, 20px); background: rgba(255,255,255,0.9); border: none; font-size: clamp(14px, 2vmin, 20px); cursor: pointer; z-index: 20; width: clamp(26px, 3.5vmin, 36px); height: clamp(26px, 3.5vmin, 36px); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
 .modal-close:hover { background: #fff; transform: scale(1.05); }
 .cp-container { flex: 1; position: relative; overflow: hidden; background: #fff; border-radius: 0 0 clamp(12px, 2vmin, 20px) clamp(12px, 2vmin, 20px); }
-
 .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: clamp(16px, 3vmin, 32px); opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; transform: scale(0.99); display: flex; flex-direction: column; }
 .slide.active { opacity: 1; pointer-events: auto; transform: scale(1); }
-
-/* Slide 1: Intro */
 .slide-intro { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); justify-content: center; align-items: center; text-align: center; color: var(--text-main); }
 .slide-intro .badge { background: rgba(255,255,255,0.3); padding: clamp(4px, 1vmin, 10px) clamp(12px, 2vw, 24px); border-radius: clamp(12px, 2vmin, 24px); font-size: clamp(11px, 1.5vmin, 15px); font-weight: 600; margin-bottom: clamp(12px, 2vh, 24px); }
 .slide-intro .package-title { font-size: clamp(28px, 6vmin, 64px); font-weight: 900; margin: 0 0 clamp(16px, 3vh, 32px); letter-spacing: -1px; line-height: 1.1; }
 .slide-intro .info-row { display: flex; gap: clamp(10px, 1.5vw, 24px); flex-wrap: wrap; justify-content: center; font-size: clamp(13px, 1.8vmin, 18px); align-items: center; }
 .slide-intro .dot { width: clamp(3px, 0.5vmin, 6px); height: clamp(3px, 0.5vmin, 6px); background: rgba(0,0,0,0.3); border-radius: 50%; align-self: center; }
 .slide-intro .footer-note { margin-top: clamp(16px, 4vh, 40px); font-size: clamp(10px, 1.2vmin, 14px); opacity: 0.7; }
-
-/* Slide 2: Overview */
 .slide-title { font-size: clamp(18px, 3vmin, 32px); font-weight: 800; margin-bottom: clamp(16px, 2.5vh, 28px); color: var(--text-main); flex-shrink: 0; }
 .tiles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 20vw, 240px), 1fr)); gap: clamp(10px, 1.5vw, 20px); flex: 1; overflow: hidden; }
 .overview-tile { background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); border: 2px solid var(--border); border-radius: clamp(8px, 1.5vmin, 14px); padding: clamp(12px, 2vmin, 20px); cursor: pointer; transition: 0.2s; position: relative; display: flex; flex-direction: column; justify-content: center; }
@@ -68,8 +61,6 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 .tile-title { font-size: clamp(14px, 2vmin, 22px); font-weight: 700; margin: 0 0 clamp(6px, 1vh, 10px); color: var(--text-main); }
 .tile-tools { font-size: clamp(11px, 1.4vmin, 15px); color: var(--text-muted); margin-bottom: clamp(8px, 1.5vh, 14px); line-height: 1.3; }
 .tile-cta { font-size: clamp(11px, 1.3vmin, 14px); font-weight: 600; color: var(--accent-hover); margin-top: auto; }
-
-/* Slide N: Detail */
 .back-to-overview { background: none; border: 1px solid var(--border); padding: clamp(4px, 0.8vmin, 10px) clamp(8px, 1.5vw, 16px); border-radius: clamp(4px, 0.8vmin, 8px); cursor: pointer; font-size: clamp(11px, 1.3vmin, 14px); color: var(--text-muted); align-self: flex-start; margin-bottom: clamp(12px, 2vh, 24px); transition: 0.2s; flex-shrink: 0; }
 .back-to-overview:hover { border-color: var(--accent); color: var(--text-main); background: #faf9f7; }
 .tools-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 22vw, 280px), 1fr)); gap: clamp(10px, 1.5vw, 20px); flex: 1; overflow-y: auto; padding-right: 8px; }
@@ -87,9 +78,7 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 .metrics-row { display: flex; gap: clamp(16px, 3vw, 32px); flex-wrap: wrap; }
 .metric .val { font-size: clamp(20px, 3.5vmin, 36px); font-weight: 900; color: var(--success); line-height: 1; }
 .metric .lbl { font-size: clamp(10px, 1.2vmin, 13px); color: var(--text-muted); display: block; margin-top: 4px; }
-
-/* Controls */
-.slide-controls { position: absolute; bottom: 0; left: 0; right: 0; height: clamp(40px, 6vh, 60px); background: #fff; border-top: 2px solid var(--border); display: flex; align-items: center; justify-content: center; gap: clamp(10px, 1.5vw, 20px); padding: 0 clamp(16px, 3vw, 24px); z-index: 5; }
+.slide-controls { position: absolute; bottom: 0; left: 0; right: 0; height: clamp(40px, 6vh, 60px); background: #fff; border-top: 2px solid var(--border); display: flex; align-items:  center; justify-content: center; gap: clamp(10px, 1.5vw, 20px); padding: 0 clamp(16px, 3vw, 24px); z-index: 5; }
 .nav-btn { background: #fff; border: 2px solid var(--border); border-radius: clamp(4px, 0.8vmin, 8px); width: clamp(32px, 4vmin, 40px); height: clamp(32px, 4vmin, 40px); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: 0.2s; font-size: clamp(14px, 2vmin, 18px); }
 .nav-btn:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); }
 .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -97,5 +86,4 @@ input:focus, select:focus { border-color: var(--accent); outline: none; box-shad
 #downloadBtn, #printBtn { width: auto; padding: 0 clamp(10px, 1.5vw, 18px); font-size: clamp(11px, 1.3vmin, 14px); font-weight: 600; }
 #downloadBtn:hover { background: var(--success); color: #fff; border-color: var(--success); }
 #printBtn:hover { background: var(--border); }
-
 @media(max-width: 768px) { .modal { padding: 0; } .modal-content { width: 100%; height: 100%; border-radius: 0; } .tiles-grid { grid-template-columns: 1fr; } }
