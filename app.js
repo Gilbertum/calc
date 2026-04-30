@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const teamSelect = document.getElementById('managerTeam');
   const nameSelect = document.getElementById('managerName');
   
+  // Обновляем макс. значение слайдера до 240
+  slider.max = 240;
+
   let currentSlide = 0;
   let totalSlides = 0;
   let keyHandler = null;
@@ -100,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.remove('hidden');
     setTimeout(() => { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }, 10);
     currentSlide = 0;
-    updateSlideUI();
+    updateSlideUI(true); // force animation on first load
     attachSlideEvents();
   }
 
@@ -112,13 +115,27 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeModal').onclick = closeModal;
   modal.onclick = (e) => { if(e.target === modal) closeModal(); };
 
-  function navigateTo(index) {
-    currentSlide = Math.max(0, Math.min(index, totalSlides - 1));
+  function navigateTo(index, direction = 0) {
+    const newIndex = Math.max(0, Math.min(index, totalSlides - 1));
+    if(newIndex === currentSlide) return;
+    
+    // Animation logic
+    const slides = document.querySelectorAll('.slide');
+    slides[currentSlide].classList.add(direction < 0 ? 'slide-exit-left' : 'slide-exit-right');
+    slides[currentSlide].classList.remove('active');
+    
+    currentSlide = newIndex;
+    slides[currentSlide].classList.add(direction > 0 ? 'slide-enter-right' : 'slide-enter-left');
+    slides[currentSlide].classList.add('active');
+    
+    setTimeout(() => {
+      slides.forEach(s => s.classList.remove('slide-exit-left', 'slide-exit-right', 'slide-enter-left', 'slide-enter-right'));
+    }, 400);
+    
     updateSlideUI();
   }
 
   function updateSlideUI() {
-    document.querySelectorAll('.slide').forEach((sl, i) => sl.classList.toggle('active', i === currentSlide));
     const counter = document.getElementById('slideCounter');
     if(counter) counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
     const prev = document.getElementById('prevBtn');
@@ -133,21 +150,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const print = document.getElementById('printBtn');
     const download = document.getElementById('downloadBtn');
     
-    if(prev) prev.onclick = () => navigateTo(currentSlide - 1);
-    if(next) next.onclick = () => navigateTo(currentSlide + 1);
+    if(prev) prev.onclick = () => navigateTo(currentSlide - 1, -1);
+    if(next) next.onclick = () => navigateTo(currentSlide + 1, 1);
     if(print) print.onclick = () => window.print();
     if(download) download.onclick = downloadCurrentSlide;
     
     document.querySelectorAll('.overview-tile').forEach(tile => { 
       tile.style.cursor='pointer'; 
-      tile.onclick = () => navigateTo(parseInt(tile.dataset.slideIndex)); 
+      tile.onclick = () => navigateTo(parseInt(tile.dataset.slideIndex), 1); 
     });
-    document.querySelectorAll('.back-to-overview').forEach(btn => btn.onclick = () => navigateTo(1));
+    document.querySelectorAll('.back-to-overview').forEach(btn => btn.onclick = () => navigateTo(1, -1));
     
     keyHandler = (e) => {
       if(!modal.classList.contains('active')) return;
-      if(e.key === 'ArrowLeft') navigateTo(currentSlide - 1);
-      if(e.key === 'ArrowRight') navigateTo(currentSlide + 1);
+      if(e.key === 'ArrowLeft') navigateTo(currentSlide - 1, -1);
+      if(e.key === 'ArrowRight') navigateTo(currentSlide + 1, 1);
       if(e.key === 'Escape') closeModal();
     };
     window.addEventListener('keydown', keyHandler);
@@ -185,19 +202,38 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!team) { showError('Выберите команду'); return; }
     if(!manager) { showError('Выберите ФИО менеджера'); return; }
     
-    const total = Math.min(base, 200);
-    const tier = total >= 50 ? 50 : Math.floor(total / 10) * 10;
-    const packageName = tier <= 10 ? 'Минимальный' : tier <= 30 ? 'Стандартный' : 'VIP';
-    const variants = CONFIG.tiers[String(tier)] || [];
+    const total = Math.min(base, 240);
+    // Определяем пакет
+    let pkgKey = 'all_in';
+    if(total <= 30) pkgKey = 'start';
+    else if(total <= 60) pkgKey = 'base';
+    else if(total <= 100) pkgKey = 'business';
+    else if(total <= 150) pkgKey = 'vip';
+    else if(total <= 200) pkgKey = 'vip_plus';
     
-    if(!variants.length) { showError('Обратный лидген предложить не можем.'); return; }
+    const pkg = CONFIG.packages[pkgKey];
+    const tier = total >= 50 ? 50 : Math.floor(total / 10) * 10;
+    // Для уровней >50 берем ближайший доступный или ALL-IN для 240
+    const tierKey = total >= 240 ? '240' : total <= 50 ? String(tier) : String(Math.min(tier, 50)); 
+    // *Примечание: в config.js прописаны все tiers до 240, поэтому используем точный ключ*
+    const exactTierKey = String(total);
+    const variants = CONFIG.tiers[exactTierKey] || CONFIG.tiers[String(tier)] || [];
+    
+    if(!variants.length) { showError('Нет доступных комбинаций для данного объёма.'); return; }
     
     const generatedAt = new Date().toLocaleString('ru-RU');
     totalSlides = 2 + variants.length;
+    
+    // Dynamic CSS for package color
+    document.documentElement.style.setProperty('--pkg-color', pkg.color);
+    document.documentElement.style.setProperty('--pkg-bg', pkg.color + '22'); // 22 hex = ~13% opacity
+    
     let slidesHTML = `
-      <div class="slide slide-intro active" data-index="0">
-        <div class="badge">Партнёру доступен пакет</div>
-        <h1 class="package-title">${packageName}</h1>
+      <div class="slide slide-intro active package-${pkgKey}" data-index="0">
+        <div class="package-badge"> Пакет "${pkg.name}"</div>
+        <div class="package-range">${pkg.range}</div>
+        <h1 class="package-title">${pkg.name}</h1>
+        <div class="package-slogan">"${pkg.slogan}"</div>
         <div class="info-row">
           <span class="info-label">Партнёр:</span> <strong>${escapeHtml(partnerName)}</strong>
           <span class="dot"></span>
@@ -213,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const detailIndex = 2 + i;
       overviewHTML += `
         <div class="overview-tile" data-slide-index="${detailIndex}">
+          <div class="tile-package-badge">${pkg.name}</div>
           <div class="tile-number">Вариант ${i + 1}</div>
           <h3 class="tile-title">${v.title}</h3>
           <div class="tile-tools">${v.tools.map(tid => CONFIG.tools.find(t=>t.id===tid)?.name).filter(Boolean).join(' + ')}</div>
@@ -236,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="tool-card">
             <div class="tool-header"><h3>${tool.name}</h3><span class="type-tag">${tool.type.toUpperCase()}</span></div>
             <p class="tool-desc">${m.description}</p>
-            <div class="tool-metrics"><span>👁 <strong>${m.views}</strong> просмотров / мес</span><span>📩 <strong>${m.leads}</strong> заявок / мес</span></div>
+            <div class="tool-metrics"><span> <strong>${m.views}</strong> просмотров / мес</span><span>📩 <strong>${m.leads}</strong> заявок / мес</span></div>
             <a href="${tool.link}" target="_blank" class="tool-link">Смотреть пример →</a>
           </div>`;
       });
@@ -266,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`;
       
     openModal(slidesHTML);
-    saveHistory({ partner_name: partnerName, package_name: packageName, total_units: total, variants_count: variants.length, config_version: CONFIG.meta.version });
+    saveHistory({ partner_name: partnerName, package_name: pkg.name, total_units: total, variants_count: variants.length, config_version: CONFIG.meta.version });
   });
 
   function saveHistory(data) { 
