@@ -4,10 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' blob: data:;">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
   <title>Админ-панель | OL Calculator</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Загружаем config.js синхронно -->
   <script src="config.js"></script>
   <style>
     :root { --admin-bg: #f8f9fa; --card-bg: #fff; --accent: #ffdd2d; --accent-hover: #ffe560; --text: #333; --text-muted: #666; --border: #e4d7c1; --success: #73b077; --error: #ff7b76; }
@@ -61,46 +60,31 @@
 <body>
   <div id="authOverlay">
     <div id="authCard">
-      <h3 style="margin:0 0 12px"> Админ-панель</h3>
+      <h3 style="margin:0 0 12px">Админ-панель</h3>
       <input type="password" id="adminPass" class="form-input" placeholder="Введите пароль" style="margin:12px 0;">
       <button class="btn btn-primary" style="width:100%" onclick="checkAuth()">Войти</button>
       <p id="authError" style="color:#ff7b76;font-size:12px;margin-top:8px;"></p>
     </div>
   </div>
-
   <div class="admin-container">
     <div class="admin-header">
-      <div class="admin-title">️ Настройки калькулятора</div>
+      <div class="admin-title">⚙️ Настройки калькулятора</div>
       <a href="index.html" class="btn btn-secondary btn-sm">← Калькулятор</a>
     </div>
-
     <div id="app"></div>
   </div>
-
   <script>
-    const ADMIN_PASS = "reverse";
+    const ADMIN_PASS = (typeof CONFIG !== 'undefined' && CONFIG.settings) ? CONFIG.settings.password : "Partner2026!";
     let appConfig = {};
     let configLoaded = false;
 
-    // Проверяем загрузку config.js
     function checkConfigLoad() {
-      console.log('Checking CONFIG load...');
-      console.log('typeof window.CONFIG:', typeof window.CONFIG);
-      if (typeof window.CONFIG !== 'undefined') {
-        console.log('CONFIG found:', window.CONFIG);
-        console.log('tools_catalog exists:', !!window.CONFIG.tools_catalog);
-        if (Array.isArray(window.CONFIG.tools_catalog)) {
-          console.log('tools_catalog length:', window.CONFIG.tools_catalog.length);
-        }
-        return true;
-      }
+      if (typeof window.CONFIG !== 'undefined' && window.CONFIG.managers && window.CONFIG.tools) return true;
       return false;
     }
 
     function initAdmin() {
       const app = document.getElementById('app');
-      
-      // Проверяем загрузку config.js
       if (!checkConfigLoad()) {
         app.innerHTML = `
           <div class="alert alert-warning">
@@ -108,37 +92,18 @@
             Файл config.js не загрузился или имеет неверную структуру.<br>
             Проверьте:<br>
             1. Файл config.js находится в той же папке<br>
-            2. В файле есть строка: <code>window.CONFIG = { ... };</code><br>
-            3. Нет ошибок синтаксиса в config.js<br><br>
+            2. В файле есть строка: <code>window.CONFIG = { ... };</code><br><br>
             <button class="btn btn-secondary btn-sm" onclick="location.reload()">🔄 Обновить страницу</button>
-          </div>
-          <div class="debug-info" id="debugInfo">Загрузка...</div>
-        `;
-        // Попытка диагностировать
-        setTimeout(() => {
-          const debugEl = document.getElementById('debugInfo');
-          if (debugEl) {
-            debugEl.textContent = `typeof window.CONFIG: ${typeof window.CONFIG}\n` +
-                                  `CONFIG keys: ${typeof window.CONFIG === 'object' ? Object.keys(window.CONFIG).join(', ') : 'N/A'}`;
-          }
-        }, 500);
+          </div>`;
         return;
       }
-
       try {
         appConfig = JSON.parse(JSON.stringify(window.CONFIG));
         configLoaded = true;
-        console.log('Admin config loaded successfully');
         checkAuth();
       } catch (e) {
         console.error('Error parsing CONFIG:', e);
-        app.innerHTML = `
-          <div class="alert alert-warning">
-            <strong>⚠️ Ошибка парсинга данных</strong><br>
-            ${e.message}<br>
-            <button class="btn btn-secondary btn-sm" onclick="location.reload()">🔄 Обновить страницу</button>
-          </div>
-        `;
+        app.innerHTML = `<div class="alert alert-warning"><strong>⚠️ Ошибка парсинга данных</strong><br>${e.message}<br><button class="btn btn-secondary btn-sm" onclick="location.reload()">🔄 Обновить страницу</button></div>`;
       }
     }
 
@@ -175,11 +140,10 @@
         <div class="card">
           <h3 style="margin:0 0 16px">Главное меню</h3>
           <div class="menu-grid">
-            <div class="menu-btn" onclick="render('edit')"><div class="menu-icon">️</div><div class="menu-title">Внести изменения</div><div class="menu-desc">Инструменты, команды, пакеты</div></div>
+            <div class="menu-btn" onclick="render('edit')"><div class="menu-icon">✏️</div><div class="menu-title">Внести изменения</div><div class="menu-desc">Инструменты, команды, пакеты</div></div>
             <div class="menu-btn" onclick="render('history')"><div class="menu-icon">📜</div><div class="menu-title">История запросов</div><div class="menu-desc">Кто и когда формировал КП</div></div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderEditMenu() {
@@ -193,8 +157,7 @@
             <div class="menu-btn" onclick="render('update-tool')"><div class="menu-icon">✏️</div><div class="menu-title">Обновить инструмент</div><div class="menu-desc">Изменить метрики или описание</div></div>
             <div class="menu-btn" onclick="render('teams')"><div class="menu-icon">👥</div><div class="menu-title">Команды и менеджеры</div><div class="menu-desc">Добавить/удалить сотрудников</div></div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderAddTool() {
@@ -206,76 +169,53 @@
             <div class="row"><div class="col"><label class="form-label">Название</label><input type="text" name="name" class="form-input" required placeholder="Напр.: Калькулятор"></div><div class="col"><label class="form-label">ID (латиница, без пробелов)</label><input type="text" name="id" class="form-input" required pattern="[a-z0-9_]+" title="Только a-z, 0-9, _" placeholder="calc_tool"></div></div>
             <div class="row" style="margin-top:12px"><div class="col"><label class="form-label">Порог утилей</label><input type="number" name="threshold" class="form-input" required min="10" step="10" placeholder="30"></div><div class="col"><label class="form-label">Тип</label><select name="type" class="form-select"><option value="placement">Размещение</option><option value="mailing">Рассылка</option><option value="editorial">Редакция</option><option value="event">Мероприятие</option><option value="integration">Интеграция</option><option value="mobile">Приложение</option><option value="media">Медиа</option></select></div></div>
             <div class="form-group" style="margin-top:12px"><label class="form-label">Описание</label><textarea name="description" class="form-input form-textarea" required placeholder="Кратко: что это и для кого"></textarea></div>
-            <div class="row"><div class="col"><label class="form-label">Просмотров/мес</label><input type="text" name="views" class="form-input" required placeholder="10 000"></div><div class="col"><label class="form-label">Лидов/мес</label><input type="text" name="leads" class="form-input" required placeholder="150"></div></div>
+            <div class="row"><div class="col"><label class="form-label">Просмотров / мес</label><input type="text" name="views" class="form-input" required placeholder="10 000"></div><div class="col"><label class="form-label">Лидов / мес</label><input type="text" name="leads" class="form-input" required placeholder="150"></div></div>
             <div class="form-group" style="margin-top:12px"><label class="form-label">Ссылка</label><input type="url" name="link" class="form-input" placeholder="https://www.tbank.ru/business/"></div>
             <button type="submit" class="btn btn-primary" style="margin-top:14px;width:100%">Сгенерировать код</button>
           </form>
-        </div>
-      `;
+        </div>`;
       
-      // Надежная привязка обработчика
       setTimeout(() => {
         const form = document.getElementById('addForm');
         if (form) {
           form.onsubmit = (e) => {
             e.preventDefault();
-            console.log('Add form submitted');
             try {
               const f = Object.fromEntries(new FormData(e.target));
-              console.log('Form data:', f);
+              if(!appConfig.tools) appConfig.tools = [];
+              if(appConfig.tools.find(t => t.id === f.id)) { alert('❌ Такой ID уже существует!'); return; }
               
-              if(!appConfig.tools_catalog) appConfig.tools_catalog = [];
-              
-              if(appConfig.tools_catalog.find(t => t.id === f.id)) {
-                alert('❌ Такой ID уже существует!');
-                return;
-              }
-
-              appConfig.tools_catalog.push({ 
+              appConfig.tools.push({ 
                 id: f.id, 
                 name: f.name, 
                 cost: parseInt(f.threshold) || 0, 
-                threshold: parseInt(f.threshold) || 0, 
                 type: f.type, 
                 tooltip: f.description, 
                 link: f.link || '#' 
               });
               
               if(!appConfig.tools_metrics) appConfig.tools_metrics = {};
-              appConfig.tools_metrics[f.id] = { 
-                description: f.description, 
-                views: f.views, 
-                leads: f.leads 
-              };
-              
-              console.log('Updated appConfig:', appConfig);
+              appConfig.tools_metrics[f.id] = { description: f.description, views: f.views, leads: f.leads };
               render('preview', { code: generateCode() });
-            } catch (err) {
-              console.error('Error in add form:', err);
-              alert('Ошибка при добавлении: ' + err.message);
-            }
+            } catch (err) { alert('Ошибка при добавлении: ' + err.message); }
           };
         }
       }, 100);
     }
 
     function renderUpdateTool() {
-      if(!configLoaded || !appConfig.tools_catalog || appConfig.tools_catalog.length === 0) {
-        document.getElementById('app').innerHTML = `
-          <div class="back-link" onclick="render('edit')">← Назад</div>
-          <div class="alert alert-warning">⚠️ Список инструментов пуст. Проверьте, что config.js загружен корректно.</div>
-        `;
+      if(!configLoaded || !appConfig.tools || appConfig.tools.length === 0) {
+        document.getElementById('app').innerHTML = `<div class="back-link" onclick="render('edit')">← Назад</div><div class="alert alert-warning">⚠️ Список инструментов пуст. Проверьте, что config.js загружен корректно.</div>`;
         return;
       }
-
-      const catalog = appConfig.tools_catalog;
-      const opts = catalog.map(t => `<option value="${t.id}">${t.name} (${t.threshold} утилей)</option>`).join('');
+      const catalog = appConfig.tools;
+      const opts = catalog.map(t => `<option value="${t.id}">${t.name} (${t.cost} утилей)</option>`).join('');
       
       document.getElementById('app').innerHTML = `
         <div class="back-link" onclick="render('edit')">← Назад</div>
         <div class="card">
           <h3 style="margin:0 0 14px">✏️ Обновить инструмент</h3>
-          <div class="alert alert-info"> Сейчас в системе: ${catalog.length} инструментов</div>
+          <div class="alert alert-info">Сейчас в системе: ${catalog.length} инструментов</div>
           <label class="form-label">Выберите для редактирования</label>
           <select id="selTool" class="form-select"><option value="">-- Выберите инструмент --</option>${opts}</select>
           <div id="editBox" class="hidden" style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px">
@@ -283,12 +223,11 @@
               <input type="hidden" name="id">
               <div class="row"><div class="col"><label class="form-label">Название</label><input type="text" name="name" class="form-input"></div><div class="col"><label class="form-label">Порог утилей</label><input type="number" name="threshold" class="form-input" min="10" step="10"></div></div>
               <div class="form-group" style="margin-top:12px"><label class="form-label">Описание</label><textarea name="description" class="form-input form-textarea"></textarea></div>
-              <div class="row"><div class="col"><label class="form-label">Просмотров/мес</label><input type="text" name="views" class="form-input"></div><div class="col"><label class="form-label">Лидов/мес</label><input type="text" name="leads" class="form-input"></div></div>
+              <div class="row"><div class="col"><label class="form-label">Просмотров / мес</label><input type="text" name="views" class="form-input"></div><div class="col"><label class="form-label">Лидов / мес</label><input type="text" name="leads" class="form-input"></div></div>
               <button type="submit" class="btn btn-primary" style="margin-top:14px;width:100%">Применить и сгенерировать код</button>
             </form>
           </div>
-        </div>
-      `;
+        </div>`;
       
       setTimeout(() => {
         const sel = document.getElementById('selTool');
@@ -297,16 +236,14 @@
             const id = e.target.value;
             const box = document.getElementById('editBox');
             if(!id) return box.classList.add('hidden');
-            
-            const tool = appConfig.tools_catalog.find(x => x.id === id);
+            const tool = appConfig.tools.find(x => x.id === id);
             const metric = appConfig.tools_metrics[id] || {};
-            
             if(tool) {
               const f = document.getElementById('updForm');
               if(f) {
                 f.id.value = id; 
                 f.name.value = tool.name; 
-                f.threshold.value = tool.threshold || tool.cost;
+                f.threshold.value = tool.cost;
                 f.description.value = metric.description || tool.tooltip || ''; 
                 f.views.value = metric.views || ''; 
                 f.leads.value = metric.leads || '';
@@ -315,31 +252,24 @@
             }
           };
         }
-        
         const updForm = document.getElementById('updForm');
         if (updForm) {
           updForm.onsubmit = (e) => {
             e.preventDefault();
             try {
               const f = Object.fromEntries(new FormData(e.target));
-              const idx = appConfig.tools_catalog.findIndex(t => t.id === f.id);
-              
+              const idx = appConfig.tools.findIndex(t => t.id === f.id);
               if(idx > -1) {
-                appConfig.tools_catalog[idx].name = f.name;
-                appConfig.tools_catalog[idx].threshold = parseInt(f.threshold) || 0;
-                appConfig.tools_catalog[idx].tooltip = f.description;
-                
+                appConfig.tools[idx].name = f.name;
+                appConfig.tools[idx].cost = parseInt(f.threshold) || 0;
+                appConfig.tools[idx].tooltip = f.description;
                 if(!appConfig.tools_metrics[f.id]) appConfig.tools_metrics[f.id] = {};
                 appConfig.tools_metrics[f.id].description = f.description;
                 appConfig.tools_metrics[f.id].views = f.views;
                 appConfig.tools_metrics[f.id].leads = f.leads;
               }
-              
               render('preview', { code: generateCode() });
-            } catch (err) {
-              console.error('Error in update form:', err);
-              alert('Ошибка при обновлении: ' + err.message);
-            }
+            } catch (err) { alert('Ошибка при обновлении: ' + err.message); }
           };
         }
       }, 100);
@@ -357,8 +287,7 @@
             <div class="row"><input type="text" id="newTeam" class="form-input" placeholder="Напр.: E-commerce"><button class="btn btn-secondary btn-sm" onclick="addTeam()">➕ Добавить</button></div>
           </div>
           <button class="btn btn-primary" style="margin-top:18px;width:100%" onclick="render('preview', {code: generateCode()})">📦 Сгенерировать финальный код</button>
-        </div>
-      `;
+        </div>`;
       document.getElementById('app').innerHTML = html;
       renderTeamsList();
     }
@@ -367,7 +296,6 @@
       const box = document.getElementById('teamsBox'); 
       if(!box) return;
       if(!appConfig.managers) appConfig.managers = {};
-      
       box.innerHTML = Object.entries(appConfig.managers).map(([team, managers]) => `
         <div class="team-block">
           <div class="team-header">
@@ -380,38 +308,23 @@
           <div class="manager-list">
             ${(managers || []).map((m, i) => `<div class="manager-item"><span>${m}</span><button class="btn btn-danger btn-sm" onclick="delMgr('${team}',${i})">Удалить</button></div>`).join('')}
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
     window.addTeam = () => { 
       const n = document.getElementById('newTeam').value.trim(); 
-      if(n && !appConfig.managers[n]) { 
-        appConfig.managers[n] = []; 
-        renderTeamsList(); 
-      } 
+      if(n && !appConfig.managers[n]) { appConfig.managers[n] = []; renderTeamsList(); } 
     };
-    
     window.addMgr = (team) => { 
       const i = document.getElementById(`mgr_${team.replace(/\s/g,'')}`); 
       const v = i.value.trim(); 
-      if(v && !appConfig.managers[team].includes(v)) { 
-        appConfig.managers[team].push(v); 
-        i.value=''; 
-        renderTeamsList(); 
-      } 
+      if(v && !appConfig.managers[team].includes(v)) { appConfig.managers[team].push(v); i.value=''; renderTeamsList(); } 
     };
-    
     window.removeTeam = (team) => { 
-      if(confirm(`Удалить "${team}"?`)) { 
-        delete appConfig.managers[team]; 
-        renderTeamsList(); 
-      } 
+      if(confirm(`Удалить "${team}"?`)) { delete appConfig.managers[team]; renderTeamsList(); } 
     };
-    
     window.delMgr = (team, idx) => { 
-      appConfig.managers[team].splice(idx, 1); 
-      renderTeamsList(); 
+      appConfig.managers[team].splice(idx, 1); renderTeamsList(); 
     };
 
     function renderHistory() {
@@ -422,58 +335,19 @@
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
             <h3 style="margin:0">История генераций</h3>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button class="btn btn-secondary btn-sm" onclick="expHist()"> Скачать CSV</button>
-              <button class="btn btn-danger btn-sm" onclick="if(confirm('Очистить всю историю?')){localStorage.removeItem('cp_history');render('history');}"> Очистить</button>
+              <button class="btn btn-secondary btn-sm" onclick="expHist()">Скачать CSV</button>
+              <button class="btn btn-danger btn-sm" onclick="if(confirm('Очистить всю историю?')){localStorage.removeItem('cp_history');render('history');}">Очистить</button>
             </div>
           </div>
-          ${hist.length ? `
-            <div style="overflow-x:auto">
-              <table class="history-table">
-                <thead>
-                  <tr>
-                    <th>Дата</th>
-                    <th>Партнёр</th>
-                    <th>Команда</th>
-                    <th>Менеджер</th>
-                    <th>Пакет</th>
-                    <th>Утилей</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${hist.map(h => `
-                    <tr>
-                      <td>${new Date(h.timestamp).toLocaleString()}</td>
-                      <td><b>${h.partner_name}</b></td>
-                      <td>${h.manager_team || '-'}</td>
-                      <td>${h.manager_name || '-'}</td>
-                      <td>${h.package_name}</td>
-                      <td>${h.total_units}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : '<p style="margin-top:12px;color:var(--text-muted)">История пуста. Менеджеры ещё не генерировали КП.</p>'}
-        </div>
-      `;
+          ${hist.length ? `<div style="overflow-x:auto"><table class="history-table"><thead><tr><th>Дата</th><th>Партнёр</th><th>Команда</th><th>Менеджер</th><th>Пакет</th><th>Утилей</th></tr></thead><tbody>${hist.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td><b>${h.partner_name}</b></td><td>${h.manager_team || '-'}</td><td>${h.manager_name || '-'}</td><td>${h.package_name}</td><td>${h.total_units}</td></tr>`).join('')}</tbody></table></div>` : '<p style="margin-top:12px;color:var(--text-muted)">История пуста. Менеджеры ещё не генерировали КП.</p>'}
+        </div>`;
     }
     
     window.expHist = () => {
       const hist = JSON.parse(localStorage.getItem('cp_history') || '[]');
       if(!hist.length) return alert('История пуста');
-      
       const headers = ['Дата','Партнёр','Команда','Менеджер','Пакет','Утилей','Вариантов','Версия'];
-      const rows = hist.map(h => [
-        new Date(h.timestamp).toLocaleString(),
-        `"${h.partner_name}"`,
-        `"${h.manager_team || ''}"`,
-        `"${h.manager_name || ''}"`,
-        h.package_name,
-        h.total_units,
-        h.variants_count || 0,
-        h.config_version || ''
-      ]);
-      
+      const rows = hist.map(h => [new Date(h.timestamp).toLocaleString(), `"${h.partner_name}"`, `"${h.manager_team || ''}"`, `"${h.manager_name || ''}"`, h.package_name, h.total_units, h.variants_count || 0, h.config_version || '']);
       const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
       const blob = new Blob(['\uFEFF' + csvContent], {type: 'text/csv;charset=utf-8;'});
       const a = document.createElement('a');
@@ -494,14 +368,12 @@
           <h3 style="margin:0 0 10px">Готовый код config.js</h3>
           <textarea class="code-preview" id="codeOut" readonly>${code}</textarea>
           <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('codeOut').value).then(b=>{b.textContent='✅ Скопировано!';setTimeout(()=>b.textContent=' Копировать',1500)})">📋 Копировать</button>
+            <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('codeOut').value).then(b=>{b.textContent=' ✅ Скопировано !';setTimeout(()=>b.textContent='Копировать',1500)})">📋 Копировать</button>
             <button class="btn btn-secondary" onclick="const b=new Blob([document.getElementById('codeOut').value],{type:'text/javascript'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='config.js';a.click()">💾 Скачать файл</button>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
-    // Инициализация
     window.addEventListener('DOMContentLoaded', initAdmin);
   </script>
 </body>
